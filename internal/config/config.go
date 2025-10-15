@@ -9,11 +9,11 @@ import (
 
 // Config represents the main configuration structure
 type Config struct {
-	DefaultBrowser string              `yaml:"defaultBrowser"`
-	Debug          bool                `yaml:"debug"`
-	LogFile        string              `yaml:"logFile"`
-	Browsers       map[string]Browser  `yaml:"browsers"`
-	Rules          []Rule              `yaml:"rules"`
+	DefaultBrowser string             `yaml:"defaultBrowser"`
+	Debug          bool               `yaml:"debug"`
+	LogFile        string             `yaml:"logFile"`
+	Browsers       map[string]Browser `yaml:"browsers"`
+	Rules          []Rule             `yaml:"rules"`
 }
 
 // Browser represents a browser configuration

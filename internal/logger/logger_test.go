@@ -52,7 +52,7 @@ func TestNew(t *testing.T) {
 				return
 			}
 			if logger != nil {
-				defer logger.Close()
+				defer func() { _ = logger.Close() }()
 
 				if tt.config.Debug && logger.level != LevelDebug {
 					t.Errorf("Expected debug level when debug is enabled, got %d", logger.level)
@@ -80,7 +80,7 @@ func TestLogger_Logging(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 
 	// Write some log messages
 	logger.Debug("Debug message: %s", "test")
@@ -89,7 +89,9 @@ func TestLogger_Logging(t *testing.T) {
 	logger.Error("Error message: %s", "test")
 
 	// Close to flush
-	logger.Close()
+	if err := logger.Close(); err != nil {
+		t.Fatalf("Failed to close logger: %v", err)
+	}
 
 	// Read log file
 	content, err := os.ReadFile(logFile)
@@ -131,14 +133,16 @@ func TestLogger_LogLevels(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 
 	// Write messages at different levels
 	logger.Debug("Debug message")
 	logger.Info("Info message")
 	logger.Error("Error message")
 
-	logger.Close()
+	if err := logger.Close(); err != nil {
+		t.Fatalf("Failed to close logger: %v", err)
+	}
 
 	// Read log file
 	content, err := os.ReadFile(logFile)
@@ -175,7 +179,7 @@ func TestInit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Init() failed: %v", err)
 	}
-	defer Close()
+	defer func() { _ = Close() }()
 
 	// Test package-level functions
 	Debug("Package debug")
@@ -183,7 +187,9 @@ func TestInit(t *testing.T) {
 	Warn("Package warn")
 	Error("Package error")
 
-	Close()
+	if err := Close(); err != nil {
+		t.Fatalf("Failed to close logger: %v", err)
+	}
 
 	// Read log file
 	content, err := os.ReadFile(logFile)
@@ -212,7 +218,7 @@ func TestLogger_NoFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Close()
+	defer func() { _ = logger.Close() }()
 
 	if logger.logToFile {
 		t.Error("Logger should not log to file when LogFile is empty")

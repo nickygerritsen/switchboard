@@ -104,8 +104,8 @@ rules:
 			wantErr: false,
 		},
 		{
-			name: "invalid yaml",
-			yaml: `this is not valid yaml: [[[`,
+			name:    "invalid yaml",
+			yaml:    `this is not valid yaml: [[[`,
 			wantErr: true,
 		},
 		{

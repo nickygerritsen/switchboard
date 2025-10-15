@@ -20,13 +20,13 @@ const (
 
 // Logger represents a logger instance
 type Logger struct {
-	level      int
-	debugLog   *log.Logger
-	infoLog    *log.Logger
-	warnLog    *log.Logger
-	errorLog   *log.Logger
-	logFile    *os.File
-	logToFile  bool
+	level     int
+	debugLog  *log.Logger
+	infoLog   *log.Logger
+	warnLog   *log.Logger
+	errorLog  *log.Logger
+	logFile   *os.File
+	logToFile bool
 }
 
 var defaultLogger *Logger
@@ -62,7 +62,7 @@ func New(cfg *config.Config) (*Logger, error) {
 	}
 
 	// Open log file if path is set
-	var writer io.Writer = io.Discard
+	writer := io.Writer(io.Discard)
 	if logPath != "" {
 		// Ensure parent directory exists
 		logDir := filepath.Dir(logPath)

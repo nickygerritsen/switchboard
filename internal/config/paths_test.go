@@ -59,15 +59,17 @@ func TestGetConfigDirWithXDGConfigHome(t *testing.T) {
 	originalXDG := os.Getenv("XDG_CONFIG_HOME")
 	defer func() {
 		if originalXDG != "" {
-			os.Setenv("XDG_CONFIG_HOME", originalXDG)
+			_ = os.Setenv("XDG_CONFIG_HOME", originalXDG)
 		} else {
-			os.Unsetenv("XDG_CONFIG_HOME")
+			_ = os.Unsetenv("XDG_CONFIG_HOME")
 		}
 	}()
 
 	// Set custom XDG_CONFIG_HOME
 	testDir := "/tmp/test-config"
-	os.Setenv("XDG_CONFIG_HOME", testDir)
+	if err := os.Setenv("XDG_CONFIG_HOME", testDir); err != nil {
+		t.Fatalf("Failed to set XDG_CONFIG_HOME: %v", err)
+	}
 
 	configDir, err := getConfigDir()
 	if err != nil {
