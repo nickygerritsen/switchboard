@@ -1,0 +1,114 @@
+# Switchboard Configuration Example
+# Copy this file to your config directory and modify as needed:
+#   Linux/macOS: ~/.config/switchboard/config.yaml
+#   Windows: %APPDATA%\switchboard\config.yaml
+
+# Default browser to use when no rules match
+defaultBrowser: chrome
+
+# Enable debug logging
+debug: false
+
+# Log file location
+# Use "auto" for OS-specific default location:
+#   macOS: ~/Library/Logs/switchboard/switchboard.log
+#   Linux: ~/.local/state/switchboard/switchboard.log
+#   Windows: %LOCALAPPDATA%\switchboard\logs\switchboard.log
+# Or specify a custom path
+logFile: auto
+
+# Browser definitions (optional - browsers are auto-detected by default)
+# Specify custom paths for browsers if they're not in standard locations
+browsers:
+  chrome:
+    path: auto  # Will auto-detect
+  firefox:
+    path: auto
+  brave:
+    path: auto
+  vivaldi:
+    path: auto
+  safari:
+    path: auto  # macOS only
+  # Custom browser example:
+  # firefox-dev:
+  #   path: /usr/bin/firefox-developer-edition
+
+# URL routing rules
+# Rules are evaluated in order - first match wins
+rules:
+  # Google services in Firefox
+  - match:
+      - "google.com"
+      - "google.com/*"
+      - "*.google.com"
+      - "*.google.com/*"
+    browser: firefox
+
+  # Work-related sites in Chrome with work profile
+  - match:
+      - "company.com"
+      - "company.com/*"
+      - "*.company.com"
+      - "*.company.com/*"
+      - "slack.com"
+      - "slack.com/*"
+      - "*.slack.com"
+      - "*.slack.com/*"
+    browser: chrome
+    profile: Work  # Chrome profile name
+
+  # GitHub and development sites in Brave
+  - match:
+      - "github.com"
+      - "github.com/*"
+      - "*.github.com"
+      - "*.github.com/*"
+      - "gitlab.com"
+      - "gitlab.com/*"
+      - "*.gitlab.com"
+      - "*.gitlab.com/*"
+    browser: brave
+
+  # Local development in Chrome with dev profile
+  - match:
+      - "localhost"
+      - "localhost/*"
+      - "localhost:*"
+      - "localhost:*/*"
+      - "127.0.0.1"
+      - "127.0.0.1/*"
+      - "127.0.0.1:*"
+      - "127.0.0.1:*/*"
+      - "*.local"
+      - "*.local/*"
+    browser: chrome
+    profile: Development
+
+  # Social media in Firefox
+  - match:
+      - "twitter.com"
+      - "twitter.com/*"
+      - "*.twitter.com"
+      - "*.twitter.com/*"
+      - "x.com"
+      - "x.com/*"
+      - "*.x.com"
+      - "*.x.com/*"
+      - "facebook.com"
+      - "facebook.com/*"
+      - "*.facebook.com"
+      - "*.facebook.com/*"
+      - "reddit.com"
+      - "reddit.com/*"
+      - "*.reddit.com"
+      - "*.reddit.com/*"
+    browser: firefox
+
+  # Banking sites in Safari (macOS) with no profile
+  - match:
+      - "bank.com"
+      - "bank.com/*"
+      - "*.bank.com"
+      - "*.bank.com/*"
+    browser: safari
