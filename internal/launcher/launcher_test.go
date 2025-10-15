@@ -3,6 +3,7 @@ package launcher
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/nickygerritsen/switchboard/internal/browser"
@@ -161,17 +162,9 @@ func TestNewLauncher(t *testing.T) {
 }
 
 func TestLauncher_Launch(t *testing.T) {
-	// Create a fake browser script for testing
+	// Create a fake browser for testing
 	tmpDir := t.TempDir()
-	browserPath := filepath.Join(tmpDir, "fake-browser")
-
-	// Create a script that just echoes the arguments
-	script := `#!/bin/sh
-echo "$@" > ` + filepath.Join(tmpDir, "args.txt")
-
-	if err := os.WriteFile(browserPath, []byte(script), 0755); err != nil {
-		t.Fatalf("Failed to create fake browser: %v", err)
-	}
+	browserPath := createFakeBrowser(t, tmpDir, "fake-browser")
 
 	cfg := &config.Config{
 		DefaultBrowser: "chrome",
@@ -194,16 +187,9 @@ echo "$@" > ` + filepath.Join(tmpDir, "args.txt")
 }
 
 func TestLauncher_LaunchWithProfile(t *testing.T) {
-	// Create a fake browser script
+	// Create a fake browser for testing
 	tmpDir := t.TempDir()
-	browserPath := filepath.Join(tmpDir, "fake-chrome")
-
-	script := `#!/bin/sh
-echo "$@" > ` + filepath.Join(tmpDir, "args.txt")
-
-	if err := os.WriteFile(browserPath, []byte(script), 0755); err != nil {
-		t.Fatalf("Failed to create fake browser: %v", err)
-	}
+	browserPath := createFakeBrowser(t, tmpDir, "fake-chrome")
 
 	cfg := &config.Config{
 		DefaultBrowser: "chrome",
@@ -238,4 +224,28 @@ func TestLauncher_LaunchInvalidBrowser(t *testing.T) {
 	if err == nil {
 		t.Error("Launch() should fail with nonexistent browser path")
 	}
+}
+
+// createFakeBrowser creates a platform-specific fake browser executable for testing
+func createFakeBrowser(t *testing.T, dir, name string) string {
+	t.Helper()
+
+	var browserPath string
+	var script string
+
+	if runtime.GOOS == "windows" {
+		// Windows: create a batch file
+		browserPath = filepath.Join(dir, name+".bat")
+		script = "@echo off\nrem Fake browser for testing\nexit /b 0\n"
+	} else {
+		// Unix (Linux/macOS): create a shell script
+		browserPath = filepath.Join(dir, name)
+		script = "#!/bin/sh\n# Fake browser for testing\nexit 0\n"
+	}
+
+	if err := os.WriteFile(browserPath, []byte(script), 0755); err != nil {
+		t.Fatalf("Failed to create fake browser: %v", err)
+	}
+
+	return browserPath
 }
