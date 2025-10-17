@@ -23,6 +23,18 @@ func runValidate(cmd *cobra.Command, args []string) error {
 	_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Configuration is valid")
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Default browser: %s\n", cfg.DefaultBrowser)
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Rules: %d\n", len(cfg.Rules))
+
+	// Count rules with rewrites
+	rewriteCount := 0
+	for _, rule := range cfg.Rules {
+		if rule.Rewrite != "" {
+			rewriteCount++
+		}
+	}
+	if rewriteCount > 0 {
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Rules with URL rewriting: %d\n", rewriteCount)
+	}
+
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Debug: %v\n", cfg.Debug)
 
 	// Show log file location

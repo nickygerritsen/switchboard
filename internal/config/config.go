@@ -27,6 +27,7 @@ type Rule struct {
 	Browser   string   `yaml:"browser"`
 	Profile   string   `yaml:"profile,omitempty"`
 	Incognito bool     `yaml:"incognito,omitempty"`
+	Rewrite   string   `yaml:"rewrite,omitempty"`
 }
 
 // Load loads the configuration from the default config file location

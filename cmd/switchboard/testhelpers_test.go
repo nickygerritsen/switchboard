@@ -32,18 +32,23 @@ type fakeRouter struct {
 }
 
 type routeResult struct {
-	browser   string
-	profile   string
-	incognito bool
-	matched   bool
+	browser      string
+	profile      string
+	incognito    bool
+	matched      bool
+	rewrittenURL string
 }
 
-func (f *fakeRouter) FindMatch(url string) (browser, profile string, incognito, matched bool) {
+func (f *fakeRouter) FindMatch(url string) (browser, profile string, incognito, matched bool, rewrittenURL string) {
 	if result, ok := f.matches[url]; ok {
-		return result.browser, result.profile, result.incognito, result.matched
+		rewritten := result.rewrittenURL
+		if rewritten == "" {
+			rewritten = url
+		}
+		return result.browser, result.profile, result.incognito, result.matched, rewritten
 	}
 	// Default behavior
-	return "firefox", "", false, false
+	return "firefox", "", false, false, url
 }
 
 // fakeLauncher is a fake browser launcher for testing

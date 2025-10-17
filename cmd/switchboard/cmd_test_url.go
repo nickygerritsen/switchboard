@@ -24,10 +24,13 @@ func runTest(cmd *cobra.Command, args []string) error {
 	}
 
 	rtr := createRouter(cfg)
-	browserName, profile, incognito, matched := rtr.FindMatch(url)
+	browserName, profile, incognito, matched, rewrittenURL := rtr.FindMatch(url)
 
 	if matched {
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "URL: %s\n", url)
+		if rewrittenURL != url {
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Rewritten URL: %s\n", rewrittenURL)
+		}
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Browser: %s\n", browserName)
 		if profile != "" {
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Profile: %s\n", profile)
