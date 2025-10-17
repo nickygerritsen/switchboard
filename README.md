@@ -21,11 +21,20 @@ A smart URL router that opens links in different browsers based on configurable 
 go build -o switchboard cmd/switchboard/main.go
 ```
 
-### Register as default browser
+### Register as a browser
 
 ```bash
-switchboard install
+# Register Switchboard as a browser (makes it available in system settings)
+switchboard register
+
+# Remove browser registration
+switchboard unregister
 ```
+
+After registration, set Switchboard as your default browser:
+- **macOS**: System Settings → Desktop & Dock → Default web browser
+- **Linux**: Settings → Default Applications → Web Browser
+- **Windows**: Settings → Apps → Default apps → Web browser
 
 ## Configuration
 
@@ -57,6 +66,12 @@ rules:
 ## Usage
 
 ```bash
+# Register as a browser
+switchboard register
+
+# Unregister as a browser
+switchboard unregister
+
 # Open a URL (typically called by the OS)
 switchboard open "https://example.com"
 
