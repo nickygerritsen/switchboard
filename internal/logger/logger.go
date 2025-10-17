@@ -40,24 +40,28 @@ func Init(cfg *config.Config) error {
 
 // New creates a new logger instance
 func New(cfg *config.Config) (*Logger, error) {
+	// Set log level based on debug flag
+	level := LevelWarn // Default: only WARN and ERROR when logging
+	if cfg.Debug {
+		level = LevelDebug // Debug mode: log everything
+	}
+
 	logger := &Logger{
-		level:     LevelInfo,
+		level:     level,
 		logToFile: false,
 	}
 
-	if cfg.Debug {
-		logger.level = LevelDebug
-	}
-
-	// Determine log file path
+	// Determine log file path - only if logFile is configured
 	var logPath string
-	if cfg.LogFile != "" && cfg.LogFile != "auto" {
-		logPath = cfg.LogFile
-	} else if cfg.LogFile == "auto" || cfg.Debug {
-		var err error
-		logPath, err = config.GetLogPath()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get log path: %w", err)
+	if cfg.LogFile != "" {
+		if cfg.LogFile == "auto" {
+			var err error
+			logPath, err = config.GetLogPath()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get log path: %w", err)
+			}
+		} else {
+			logPath = cfg.LogFile
 		}
 	}
 

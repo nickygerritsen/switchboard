@@ -58,8 +58,8 @@ func TestNew(t *testing.T) {
 					t.Errorf("Expected debug level when debug is enabled, got %d", logger.level)
 				}
 
-				if !tt.config.Debug && logger.level != LevelInfo {
-					t.Errorf("Expected info level when debug is disabled, got %d", logger.level)
+				if !tt.config.Debug && logger.level != LevelWarn {
+					t.Errorf("Expected warn level when debug is disabled, got %d", logger.level)
 				}
 			}
 		})
@@ -125,7 +125,7 @@ func TestLogger_LogLevels(t *testing.T) {
 
 	cfg := &config.Config{
 		DefaultBrowser: "chrome",
-		Debug:          false, // Info level
+		Debug:          false, // Warn level (only WARN and ERROR)
 		LogFile:        logFile,
 	}
 
@@ -138,6 +138,7 @@ func TestLogger_LogLevels(t *testing.T) {
 	// Write messages at different levels
 	logger.Debug("Debug message")
 	logger.Info("Info message")
+	logger.Warn("Warn message")
 	logger.Error("Error message")
 
 	if err := logger.Close(); err != nil {
@@ -152,13 +153,16 @@ func TestLogger_LogLevels(t *testing.T) {
 
 	logContent := string(content)
 
-	// Debug should not be logged at info level
+	// Debug and Info should not be logged at warn level
 	if strings.Contains(logContent, "[DEBUG]") {
 		t.Error("Log file should not contain [DEBUG] when debug is disabled")
 	}
-	// Info and Error should be logged
-	if !strings.Contains(logContent, "[INFO]") {
-		t.Error("Log file should contain [INFO]")
+	if strings.Contains(logContent, "[INFO]") {
+		t.Error("Log file should not contain [INFO] when debug is disabled")
+	}
+	// Warn and Error should be logged
+	if !strings.Contains(logContent, "[WARN]") {
+		t.Error("Log file should contain [WARN]")
 	}
 	if !strings.Contains(logContent, "[ERROR]") {
 		t.Error("Log file should contain [ERROR]")
