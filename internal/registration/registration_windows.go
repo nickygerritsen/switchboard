@@ -4,7 +4,6 @@ package registration
 
 import (
 	"fmt"
-	"os"
 
 	"golang.org/x/sys/windows/registry"
 )
