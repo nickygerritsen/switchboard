@@ -36,14 +36,15 @@ func (d *Detector) Detect(name string) (*Browser, error) {
 	d.cacheMux.RUnlock()
 
 	// Check if user specified a custom path in config
-	if d.config.Browsers != nil {
+	if d.config != nil && d.config.Browsers != nil {
 		if browserCfg, ok := d.config.Browsers[name]; ok {
 			if browserCfg.Path != "" && browserCfg.Path != "auto" {
 				// Verify the path exists
 				if _, err := os.Stat(browserCfg.Path); err == nil {
 					browser := &Browser{
-						Name: name,
-						Path: browserCfg.Path,
+						Name:     name,
+						Path:     browserCfg.Path,
+						Profiles: DetectProfiles(name),
 					}
 					d.cacheResult(name, browser)
 					return browser, nil
@@ -62,8 +63,9 @@ func (d *Detector) Detect(name string) (*Browser, error) {
 	for _, path := range browserDef.GetPaths() {
 		if _, err := os.Stat(path); err == nil {
 			browser := &Browser{
-				Name: name,
-				Path: path,
+				Name:     name,
+				Path:     path,
+				Profiles: DetectProfiles(name),
 			}
 			d.cacheResult(name, browser)
 			return browser, nil
@@ -76,8 +78,9 @@ func (d *Detector) Detect(name string) (*Browser, error) {
 		absPath, err := filepath.Abs(path)
 		if err == nil {
 			browser := &Browser{
-				Name: name,
-				Path: absPath,
+				Name:     name,
+				Path:     absPath,
+				Profiles: DetectProfiles(name),
 			}
 			d.cacheResult(name, browser)
 			return browser, nil
@@ -92,8 +95,9 @@ func (d *Detector) Detect(name string) (*Browser, error) {
 				absPath, err := filepath.Abs(path)
 				if err == nil {
 					browser := &Browser{
-						Name: name,
-						Path: absPath,
+						Name:     name,
+						Path:     absPath,
+						Profiles: DetectProfiles(name),
 					}
 					d.cacheResult(name, browser)
 					return browser, nil
