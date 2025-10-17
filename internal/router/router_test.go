@@ -90,7 +90,7 @@ func TestRouter_FindMatch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, profile, _, matched := router.FindMatch(tt.url)
+			browser, profile, _, matched, _ := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -118,7 +118,7 @@ func TestRouter_FindMatchInvalidURL(t *testing.T) {
 	router := NewRouter(cfg)
 
 	// Invalid URL should return default browser
-	browser, profile, _, matched := router.FindMatch("not a url")
+	browser, profile, _, matched, _ := router.FindMatch("not a url")
 	if browser != "chrome" {
 		t.Errorf("FindMatch() with invalid URL browser = %q, want %q", browser, "chrome")
 	}
@@ -193,7 +193,7 @@ rules:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, profile, _, _ := router.FindMatch(tt.url)
+			browser, profile, _, _, _ := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("Route() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -212,7 +212,7 @@ func TestRouter_FindMatchEmptyRules(t *testing.T) {
 
 	router := NewRouter(cfg)
 
-	browser, profile, _, matched := router.FindMatch("https://google.com")
+	browser, profile, _, matched, _ := router.FindMatch("https://google.com")
 	if browser != "chrome" {
 		t.Errorf("FindMatch() with no rules browser = %q, want %q", browser, "chrome")
 	}
@@ -265,7 +265,7 @@ func TestRouter_FindMatchMultiplePatterns(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, _, _, matched := router.FindMatch(tt.url)
+			browser, _, _, matched, _ := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -331,7 +331,7 @@ func TestRouter_FindMatchWithIncognito(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, profile, incognito, matched := router.FindMatch(tt.url)
+			browser, profile, incognito, matched, _ := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -343,6 +343,90 @@ func TestRouter_FindMatchWithIncognito(t *testing.T) {
 			}
 			if matched != tt.wantMatched {
 				t.Errorf("FindMatch() matched = %v, want %v", matched, tt.wantMatched)
+			}
+		})
+	}
+}
+
+func TestRouter_FindMatchWithRewrite(t *testing.T) {
+	cfg := &config.Config{
+		DefaultBrowser: "chrome",
+		Rules: []config.Rule{
+			{
+				Match:   []string{"twitter.com/*", "x.com/*"},
+				Browser: "firefox",
+				Rewrite: "xcancel.com{path}",
+			},
+			{
+				Match:   []string{"*.youtube.com/*"},
+				Browser: "firefox",
+				Rewrite: "invidious.io{path}?{query}",
+			},
+			{
+				Match:   []string{"reddit.com/*", "*.reddit.com/*"},
+				Browser: "firefox",
+				Rewrite: "teddit.net{path}",
+			},
+		},
+	}
+
+	router := NewRouter(cfg)
+
+	tests := []struct {
+		name             string
+		url              string
+		wantBrowser      string
+		wantRewrittenURL string
+		wantMatched      bool
+	}{
+		{
+			name:             "rewrite twitter to xcancel",
+			url:              "https://twitter.com/user/status/123",
+			wantBrowser:      "firefox",
+			wantRewrittenURL: "https://xcancel.com/user/status/123",
+			wantMatched:      true,
+		},
+		{
+			name:             "rewrite x.com to xcancel",
+			url:              "https://x.com/user/status/456",
+			wantBrowser:      "firefox",
+			wantRewrittenURL: "https://xcancel.com/user/status/456",
+			wantMatched:      true,
+		},
+		{
+			name:             "rewrite youtube to invidious",
+			url:              "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+			wantBrowser:      "firefox",
+			wantRewrittenURL: "https://invidious.io/watch?v=dQw4w9WgXcQ",
+			wantMatched:      true,
+		},
+		{
+			name:             "rewrite reddit to teddit",
+			url:              "https://old.reddit.com/r/programming/comments/abc/title",
+			wantBrowser:      "firefox",
+			wantRewrittenURL: "https://teddit.net/r/programming/comments/abc/title",
+			wantMatched:      true,
+		},
+		{
+			name:             "no match returns original URL",
+			url:              "https://example.com/path",
+			wantBrowser:      "chrome",
+			wantRewrittenURL: "https://example.com/path",
+			wantMatched:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			browser, _, _, matched, rewrittenURL := router.FindMatch(tt.url)
+			if browser != tt.wantBrowser {
+				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
+			}
+			if matched != tt.wantMatched {
+				t.Errorf("FindMatch() matched = %v, want %v", matched, tt.wantMatched)
+			}
+			if rewrittenURL != tt.wantRewrittenURL {
+				t.Errorf("FindMatch() rewrittenURL = %q, want %q", rewrittenURL, tt.wantRewrittenURL)
 			}
 		})
 	}

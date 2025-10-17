@@ -34,7 +34,7 @@ type browserDetector interface {
 }
 
 type urlRouter interface {
-	FindMatch(url string) (browser, profile string, incognito, matched bool)
+	FindMatch(url string) (browser, profile string, incognito, matched bool, rewrittenURL string)
 }
 
 type browserLauncher interface {
