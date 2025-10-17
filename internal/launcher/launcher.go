@@ -22,8 +22,8 @@ func NewLauncher(cfg *config.Config) *Launcher {
 	}
 }
 
-// Launch opens a URL in the specified browser with optional profile
-func (l *Launcher) Launch(br *browser.Browser, url, profile string) error {
+// Launch opens a URL in the specified browser with optional profile and incognito mode
+func (l *Launcher) Launch(br *browser.Browser, url, profile string, incognito bool) error {
 	if br == nil {
 		return fmt.Errorf("browser cannot be nil")
 	}
@@ -31,10 +31,10 @@ func (l *Launcher) Launch(br *browser.Browser, url, profile string) error {
 		return fmt.Errorf("URL cannot be empty")
 	}
 
-	logger.Debug("Launching %s with URL: %s, profile: %s", br.Name, url, profile)
+	logger.Debug("Launching %s with URL: %s, profile: %s, incognito: %v", br.Name, url, profile, incognito)
 
 	// Build command arguments
-	args := buildArgs(br, url, profile)
+	args := buildArgs(br, url, profile, incognito)
 
 	// Create command
 	cmd := exec.Command(br.Path, args...)
@@ -57,8 +57,16 @@ func (l *Launcher) Launch(br *browser.Browser, url, profile string) error {
 }
 
 // buildArgs constructs the command-line arguments for launching a browser
-func buildArgs(br *browser.Browser, url, profile string) []string {
+func buildArgs(br *browser.Browser, url, profile string, incognito bool) []string {
 	var args []string
+
+	// Add incognito/private mode flag if requested
+	if incognito {
+		incognitoFlag := getIncognitoFlag(br.Name)
+		if incognitoFlag != "" {
+			args = append(args, incognitoFlag)
+		}
+	}
 
 	// Add profile-specific arguments if profile is specified and browser supports it
 	if profile != "" && supportsProfiles(br.Name) {
@@ -132,4 +140,22 @@ func getPlatformArgs(browserName string) []string {
 	}
 
 	return args
+}
+
+// getIncognitoFlag returns the incognito/private mode flag for a browser
+func getIncognitoFlag(browserName string) string {
+	switch browserName {
+	case "chrome", "brave", "chromium", "vivaldi":
+		return "--incognito"
+	case "edge":
+		return "--inprivate"
+	case "firefox":
+		return "--private-window"
+	case "safari":
+		// Safari doesn't support a command-line flag for private browsing
+		// The best we can do is open normally
+		return ""
+	default:
+		return ""
+	}
 }
