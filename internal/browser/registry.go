@@ -4,8 +4,9 @@ import "runtime"
 
 // Browser represents a detected browser
 type Browser struct {
-	Name string
-	Path string
+	Name     string
+	Path     string
+	Profiles []Profile
 }
 
 // BrowserDef defines a browser and its potential paths

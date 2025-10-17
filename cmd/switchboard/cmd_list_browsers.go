@@ -14,12 +14,8 @@ var listBrowsersCmd = &cobra.Command{
 }
 
 func runListBrowsers(cmd *cobra.Command, args []string) error {
-	cfg, err := loadConfig()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
-	detector := createDetector(cfg)
+	// list-browsers doesn't need config - it just detects all browsers
+	detector := createDetector(nil)
 	browsers := detector.DetectAll()
 
 	if len(browsers) == 0 {
@@ -30,7 +26,15 @@ func runListBrowsers(cmd *cobra.Command, args []string) error {
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Detected %d browser(s):\n\n", len(browsers))
 	for _, br := range browsers {
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  %s\n", br.Name)
-		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "    Path: %s\n\n", br.Path)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "    Path: %s\n", br.Path)
+
+		if len(br.Profiles) > 0 {
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "    Profiles:\n")
+			for _, profile := range br.Profiles {
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "      - %s (%s)\n", profile.Name, profile.Directory)
+			}
+		}
+		_, _ = fmt.Fprintln(cmd.OutOrStdout())
 	}
 
 	return nil

@@ -15,19 +15,24 @@ func TestRunInit(t *testing.T) {
 	tests := []struct {
 		name           string
 		setupFunc      func(tempDir string) string // Returns config path to use
+		stdinInput     string                      // Input for the interactive prompt
 		wantErr        bool
 		wantErrContain string
 		wantOutput     []string
 		checkFile      func(t *testing.T, configPath string)
 	}{
 		{
-			name: "successful init - new config",
+			name: "successful init - new config with chrome",
 			setupFunc: func(tempDir string) string {
 				return filepath.Join(tempDir, "config.yaml")
 			},
-			wantErr: false,
+			stdinInput: "chrome\n",
+			wantErr:    false,
 			wantOutput: []string{
+				"Detected",
+				"browser(s)",
 				"Created configuration file at:",
+				"Default browser set to: chrome",
 				"Edit this file to customize your browser routing rules",
 			},
 			checkFile: func(t *testing.T, configPath string) {
@@ -41,11 +46,23 @@ func TestRunInit(t *testing.T) {
 					}
 					content := string(data)
 					// Check for some expected content
-					if !strings.Contains(content, "defaultBrowser") {
-						t.Error("Created config should contain defaultBrowser field")
+					if !strings.Contains(content, "defaultBrowser: chrome") {
+						t.Error("Created config should contain defaultBrowser: chrome")
+					}
+					if !strings.Contains(content, "browsers:") {
+						t.Error("Created config should contain browsers section")
 					}
 				}
 			},
+		},
+		{
+			name: "init fails - invalid browser choice",
+			setupFunc: func(tempDir string) string {
+				return filepath.Join(tempDir, "config.yaml")
+			},
+			stdinInput:     "doesnotexist\n",
+			wantErr:        true,
+			wantErrContain: "was not detected",
 		},
 		{
 			name: "init fails - config already exists",
@@ -54,6 +71,7 @@ func TestRunInit(t *testing.T) {
 				_ = os.WriteFile(configPath, []byte("defaultBrowser: firefox\n"), 0644)
 				return configPath
 			},
+			stdinInput:     "chrome\n",
 			wantErr:        true,
 			wantErrContain: "configuration file already exists",
 		},
@@ -63,6 +81,7 @@ func TestRunInit(t *testing.T) {
 				// Return a path in a non-existent directory
 				return "/nonexistent/directory/that/does/not/exist/config.yaml"
 			},
+			stdinInput:     "chrome\n",
 			wantErr:        true,
 			wantErrContain: "failed to save config",
 		},
@@ -79,8 +98,11 @@ func TestRunInit(t *testing.T) {
 			})
 			defer config.SetConfigPathProvider(oldProvider)
 
-			// Capture output
+			// Capture output and provide input
 			var buf bytes.Buffer
+			var inBuf bytes.Buffer
+			inBuf.WriteString(tt.stdinInput)
+
 			iniCmd := &cobra.Command{
 				Use:  initCmd.Use,
 				Args: initCmd.Args,
@@ -88,6 +110,7 @@ func TestRunInit(t *testing.T) {
 			}
 			iniCmd.SetOut(&buf)
 			iniCmd.SetErr(&buf)
+			iniCmd.SetIn(&inBuf)
 
 			err := runInit(iniCmd, []string{})
 
