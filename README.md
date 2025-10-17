@@ -2,6 +2,8 @@
 
 A smart URL router that opens links in different browsers based on configurable patterns.
 
+> **Note:** This codebase was initially created with AI assistance (Claude Code). While comprehensive tests are included and CI/CD is set up, the code has not been as thoroughly vetted as my typical projects. Use with appropriate caution and please report any issues you encounter.
+
 ## Features
 
 - 🎯 Route URLs to different browsers based on patterns
