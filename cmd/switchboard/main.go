@@ -8,6 +8,7 @@ import (
 	"github.com/nickygerritsen/switchboard/internal/config"
 	"github.com/nickygerritsen/switchboard/internal/launcher"
 	"github.com/nickygerritsen/switchboard/internal/logger"
+	"github.com/nickygerritsen/switchboard/internal/registration"
 	"github.com/nickygerritsen/switchboard/internal/router"
 	"github.com/spf13/cobra"
 )
@@ -40,6 +41,13 @@ type browserLauncher interface {
 	Launch(br *browser.Browser, url, profile string) error
 }
 
+type browserRegistrar interface {
+	Register() error
+	Unregister() error
+	IsRegistered() (bool, error)
+	GetBinaryPath() (string, error)
+}
+
 // Factory functions that can be overridden in tests
 var (
 	detectorFactory = func(cfg *config.Config) browserDetector {
@@ -50,6 +58,9 @@ var (
 	}
 	launcherFactory = func(cfg *config.Config) browserLauncher {
 		return launcher.NewLauncher(cfg)
+	}
+	registrarFactory = func() (browserRegistrar, error) {
+		return registration.New()
 	}
 )
 
@@ -62,6 +73,8 @@ func init() {
 	rootCmd.AddCommand(listBrowsersCmd)
 	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(registerCmd)
+	rootCmd.AddCommand(unregisterCmd)
 }
 
 func main() {
