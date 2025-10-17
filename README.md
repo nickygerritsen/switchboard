@@ -18,7 +18,7 @@ A smart URL router that opens links in different browsers based on configurable 
 ### Building from source
 
 ```bash
-go build -o switchboard cmd/switchboard/main.go
+go build -o switchboard ./cmd/switchboard
 ```
 
 ### Register as a browser
