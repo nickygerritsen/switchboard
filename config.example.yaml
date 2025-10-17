@@ -87,6 +87,19 @@ rules:
 
   # Social media in Firefox
   - match:
+      - "facebook.com"
+      - "facebook.com/*"
+      - "*.facebook.com"
+      - "*.facebook.com/*"
+      - "instagram.com"
+      - "instagram.com/*"
+      - "*.instagram.com"
+      - "*.instagram.com/*"
+    browser: firefox
+
+  # URL rewriting examples - redirect to privacy-friendly frontends
+  # Twitter/X → xcancel (privacy frontend)
+  - match:
       - "twitter.com"
       - "twitter.com/*"
       - "*.twitter.com"
@@ -95,21 +108,22 @@ rules:
       - "x.com/*"
       - "*.x.com"
       - "*.x.com/*"
-      - "facebook.com"
-      - "facebook.com/*"
-      - "*.facebook.com"
-      - "*.facebook.com/*"
-      - "reddit.com"
-      - "reddit.com/*"
-      - "*.reddit.com"
-      - "*.reddit.com/*"
+    rewrite: "xcancel.com{path}"  # Rewrite URL before opening
     browser: firefox
 
-  # Banking sites in Safari (macOS) with incognito mode
+  # Available template variables for rewriting:
+  # {scheme}   - URL scheme (http, https)
+  # {host}     - Hostname (e.g., "example.com")
+  # {port}     - Port number (empty if not specified)
+  # {path}     - Path portion (e.g., "/foo/bar")
+  # {query}    - Query string (e.g., "key=value")
+  # {fragment} - Fragment/hash (e.g., "section")
+
+  # Banking sites in Chrome with incognito mode
   - match:
       - "bank.com"
       - "bank.com/*"
       - "*.bank.com"
       - "*.bank.com/*"
-    browser: safari
-    incognito: true  # Open in private browsing mode
+    browser: chrome
+    incognito: true
