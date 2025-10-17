@@ -65,8 +65,27 @@ rules: []
 				"Default browser: chrome",
 				"Rules: 0",
 				"Debug: false",
+				"Log file: disabled",
+			},
+		},
+		{
+			name: "valid configuration with auto log file",
+			configContent: `defaultBrowser: chrome
+debug: false
+logFile: auto
+browsers:
+  chrome:
+    path: /usr/bin/chrome
+rules: []
+`,
+			wantErr: false,
+			wantOutput: []string{
+				"Configuration is valid",
+				"Default browser: chrome",
+				"Rules: 0",
+				"Debug: false",
 				"Log file:",
-				"(default)",
+				"switchboard.log",
 			},
 		},
 		{
