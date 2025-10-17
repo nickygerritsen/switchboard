@@ -7,8 +7,29 @@ import (
 	"runtime"
 )
 
-// GetConfigPath returns the default configuration file path for the current OS
+// configPathFunc is a function type for getting the config path
+type configPathFunc func() (string, error)
+
+// configPathProvider is the function used to get the config path
+// Can be overridden in tests for dependency injection
+var configPathProvider configPathFunc = getDefaultConfigPath
+
+// GetConfigPath returns the configuration file path
+// Uses configPathProvider which can be overridden in tests
 func GetConfigPath() (string, error) {
+	return configPathProvider()
+}
+
+// SetConfigPathProvider allows overriding the config path function for testing
+// Returns the previous provider so it can be restored
+func SetConfigPathProvider(provider configPathFunc) configPathFunc {
+	old := configPathProvider
+	configPathProvider = provider
+	return old
+}
+
+// getDefaultConfigPath returns the default configuration file path for the current OS
+func getDefaultConfigPath() (string, error) {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return "", err
