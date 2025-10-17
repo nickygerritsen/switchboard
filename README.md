@@ -7,9 +7,11 @@ A smart URL router that opens links in different browsers based on configurable 
 ## Features
 
 - 🎯 Route URLs to different browsers based on patterns
+- 🔄 URL rewriting with template variables
 - 🔧 Simple YAML configuration
 - 🌍 Cross-platform support (macOS, Linux, Windows)
 - 👤 Profile support for Chrome based browsers and Firefox
+- 🕶️ Incognito/private mode support
 - 🔍 Automatic browser detection
 - 📝 Debug logging support
 
@@ -61,6 +63,64 @@ rules:
       - "github.com"
       - "*.github.com"
     browser: brave
+```
+
+### URL Rewriting
+
+Rewrite URLs before opening them in browsers. This is useful for redirecting to privacy-friendly frontends or alternative services.
+
+```yaml
+rules:
+  # Redirect Twitter/X to xcancel (privacy frontend)
+  - match:
+      - "twitter.com/*"
+      - "x.com/*"
+    rewrite: "xcancel.com{path}"
+    browser: firefox
+```
+
+**Available template variables:**
+- `{scheme}` - URL scheme (http, https)
+- `{host}` - Hostname (e.g., "example.com")
+- `{port}` - Port number (empty if not specified)
+- `{path}` - Path portion (e.g., "/foo/bar")
+- `{query}` - Query string (e.g., "key=value&key2=value2")
+- `{fragment}` - Fragment/hash (e.g., "section")
+
+**Examples:**
+- `https://twitter.com/user/status/123` → `https://xcancel.com/user/status/123`
+- `https://www.youtube.com/watch?v=abc` → `https://alternative.example.com/watch?v=abc`
+- `https://old.example.com/some/path` → `https://new.example.com/some/path`
+
+### Profile Support
+
+Open URLs in specific browser profiles:
+
+```yaml
+rules:
+  - match:
+      - "work.company.com"
+      - "*.work.company.com"
+    browser: chrome
+    profile: Work
+
+  - match:
+      - "personal.example.com"
+    browser: firefox
+    profile: Personal
+```
+
+### Incognito/Private Mode
+
+Open URLs in incognito or private browsing mode:
+
+```yaml
+rules:
+  - match:
+      - "bank.com"
+      - "*.bank.com"
+    browser: firefox
+    incognito: true
 ```
 
 ## Usage
