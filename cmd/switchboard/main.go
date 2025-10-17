@@ -34,11 +34,11 @@ type browserDetector interface {
 }
 
 type urlRouter interface {
-	FindMatch(url string) (browser, profile string, matched bool)
+	FindMatch(url string) (browser, profile string, incognito, matched bool)
 }
 
 type browserLauncher interface {
-	Launch(br *browser.Browser, url, profile string) error
+	Launch(br *browser.Browser, url, profile string, incognito bool) error
 }
 
 type browserRegistrar interface {

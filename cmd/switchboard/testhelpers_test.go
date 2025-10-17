@@ -32,17 +32,18 @@ type fakeRouter struct {
 }
 
 type routeResult struct {
-	browser string
-	profile string
-	matched bool
+	browser   string
+	profile   string
+	incognito bool
+	matched   bool
 }
 
-func (f *fakeRouter) FindMatch(url string) (browser, profile string, matched bool) {
+func (f *fakeRouter) FindMatch(url string) (browser, profile string, incognito, matched bool) {
 	if result, ok := f.matches[url]; ok {
-		return result.browser, result.profile, result.matched
+		return result.browser, result.profile, result.incognito, result.matched
 	}
 	// Default behavior
-	return "firefox", "", false
+	return "firefox", "", false, false
 }
 
 // fakeLauncher is a fake browser launcher for testing
@@ -52,19 +53,21 @@ type fakeLauncher struct {
 }
 
 type launchRecord struct {
-	browser string
-	url     string
-	profile string
+	browser   string
+	url       string
+	profile   string
+	incognito bool
 }
 
-func (f *fakeLauncher) Launch(br *browser.Browser, url, profile string) error {
+func (f *fakeLauncher) Launch(br *browser.Browser, url, profile string, incognito bool) error {
 	if f.launchError != nil {
 		return f.launchError
 	}
 	f.launchedURLs = append(f.launchedURLs, launchRecord{
-		browser: br.Name,
-		url:     url,
-		profile: profile,
+		browser:   br.Name,
+		url:       url,
+		profile:   profile,
+		incognito: incognito,
 	})
 	return nil
 }
