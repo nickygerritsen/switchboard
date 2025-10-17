@@ -90,7 +90,7 @@ func TestRouter_FindMatch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, profile, matched := router.FindMatch(tt.url)
+			browser, profile, _, matched := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -118,7 +118,7 @@ func TestRouter_FindMatchInvalidURL(t *testing.T) {
 	router := NewRouter(cfg)
 
 	// Invalid URL should return default browser
-	browser, profile, matched := router.FindMatch("not a url")
+	browser, profile, _, matched := router.FindMatch("not a url")
 	if browser != "chrome" {
 		t.Errorf("FindMatch() with invalid URL browser = %q, want %q", browser, "chrome")
 	}
@@ -193,7 +193,7 @@ rules:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, profile, _ := router.FindMatch(tt.url)
+			browser, profile, _, _ := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("Route() browser = %q, want %q", browser, tt.wantBrowser)
 			}
@@ -212,7 +212,7 @@ func TestRouter_FindMatchEmptyRules(t *testing.T) {
 
 	router := NewRouter(cfg)
 
-	browser, profile, matched := router.FindMatch("https://google.com")
+	browser, profile, _, matched := router.FindMatch("https://google.com")
 	if browser != "chrome" {
 		t.Errorf("FindMatch() with no rules browser = %q, want %q", browser, "chrome")
 	}
@@ -265,9 +265,81 @@ func TestRouter_FindMatchMultiplePatterns(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			browser, _, matched := router.FindMatch(tt.url)
+			browser, _, _, matched := router.FindMatch(tt.url)
 			if browser != tt.wantBrowser {
 				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
+			}
+			if matched != tt.wantMatched {
+				t.Errorf("FindMatch() matched = %v, want %v", matched, tt.wantMatched)
+			}
+		})
+	}
+}
+
+func TestRouter_FindMatchWithIncognito(t *testing.T) {
+	cfg := &config.Config{
+		DefaultBrowser: "chrome",
+		Rules: []config.Rule{
+			{
+				Match:     []string{"bank.com", "*.bank.com"},
+				Browser:   "firefox",
+				Incognito: true,
+			},
+			{
+				Match:   []string{"work.com"},
+				Browser: "chrome",
+				Profile: "Work",
+			},
+		},
+	}
+
+	router := NewRouter(cfg)
+
+	tests := []struct {
+		name          string
+		url           string
+		wantBrowser   string
+		wantProfile   string
+		wantIncognito bool
+		wantMatched   bool
+	}{
+		{
+			name:          "matches with incognito",
+			url:           "https://bank.com",
+			wantBrowser:   "firefox",
+			wantProfile:   "",
+			wantIncognito: true,
+			wantMatched:   true,
+		},
+		{
+			name:          "matches without incognito",
+			url:           "https://work.com",
+			wantBrowser:   "chrome",
+			wantProfile:   "Work",
+			wantIncognito: false,
+			wantMatched:   true,
+		},
+		{
+			name:          "no match defaults to no incognito",
+			url:           "https://example.com",
+			wantBrowser:   "chrome",
+			wantProfile:   "",
+			wantIncognito: false,
+			wantMatched:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			browser, profile, incognito, matched := router.FindMatch(tt.url)
+			if browser != tt.wantBrowser {
+				t.Errorf("FindMatch() browser = %q, want %q", browser, tt.wantBrowser)
+			}
+			if profile != tt.wantProfile {
+				t.Errorf("FindMatch() profile = %q, want %q", profile, tt.wantProfile)
+			}
+			if incognito != tt.wantIncognito {
+				t.Errorf("FindMatch() incognito = %v, want %v", incognito, tt.wantIncognito)
 			}
 			if matched != tt.wantMatched {
 				t.Errorf("FindMatch() matched = %v, want %v", matched, tt.wantMatched)

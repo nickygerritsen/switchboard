@@ -23,9 +23,10 @@ type Browser struct {
 
 // Rule represents a URL routing rule
 type Rule struct {
-	Match   []string `yaml:"match"`
-	Browser string   `yaml:"browser"`
-	Profile string   `yaml:"profile,omitempty"`
+	Match     []string `yaml:"match"`
+	Browser   string   `yaml:"browser"`
+	Profile   string   `yaml:"profile,omitempty"`
+	Incognito bool     `yaml:"incognito,omitempty"`
 }
 
 // Load loads the configuration from the default config file location

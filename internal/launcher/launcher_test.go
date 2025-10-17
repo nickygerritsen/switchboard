@@ -83,7 +83,7 @@ func TestBuildArgs(t *testing.T) {
 				Path: "/usr/bin/" + tt.browserName,
 			}
 
-			args := buildArgs(br, tt.url, tt.profile)
+			args := buildArgs(br, tt.url, tt.profile, false)
 
 			// Check URL is present
 			found := false
@@ -177,7 +177,7 @@ func TestLauncher_Launch(t *testing.T) {
 		Path: browserPath,
 	}
 
-	err := launcher.Launch(br, "https://google.com", "")
+	err := launcher.Launch(br, "https://google.com", "", false)
 	if err != nil {
 		t.Fatalf("Launch() failed: %v", err)
 	}
@@ -202,7 +202,7 @@ func TestLauncher_LaunchWithProfile(t *testing.T) {
 		Path: browserPath,
 	}
 
-	err := launcher.Launch(br, "https://google.com", "Work")
+	err := launcher.Launch(br, "https://google.com", "Work", false)
 	if err != nil {
 		t.Fatalf("Launch() with profile failed: %v", err)
 	}
@@ -220,9 +220,109 @@ func TestLauncher_LaunchInvalidBrowser(t *testing.T) {
 		Path: "/nonexistent/browser",
 	}
 
-	err := launcher.Launch(br, "https://google.com", "")
+	err := launcher.Launch(br, "https://google.com", "", false)
 	if err == nil {
 		t.Error("Launch() should fail with nonexistent browser path")
+	}
+}
+
+func TestGetIncognitoFlag(t *testing.T) {
+	tests := []struct {
+		name        string
+		browserName string
+		want        string
+	}{
+		{"chrome has --incognito", "chrome", "--incognito"},
+		{"brave has --incognito", "brave", "--incognito"},
+		{"chromium has --incognito", "chromium", "--incognito"},
+		{"vivaldi has --incognito", "vivaldi", "--incognito"},
+		{"edge has --inprivate", "edge", "--inprivate"},
+		{"firefox has --private-window", "firefox", "--private-window"},
+		{"safari has no flag", "safari", ""},
+		{"unknown browser has no flag", "unknown", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getIncognitoFlag(tt.browserName)
+			if got != tt.want {
+				t.Errorf("getIncognitoFlag(%q) = %q, want %q", tt.browserName, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBuildArgsWithIncognito(t *testing.T) {
+	tests := []struct {
+		name         string
+		browserName  string
+		incognito    bool
+		wantFlag     string
+		wantHasFlag  bool
+	}{
+		{
+			name:         "chrome with incognito",
+			browserName:  "chrome",
+			incognito:    true,
+			wantFlag:     "--incognito",
+			wantHasFlag:  true,
+		},
+		{
+			name:         "chrome without incognito",
+			browserName:  "chrome",
+			incognito:    false,
+			wantFlag:     "--incognito",
+			wantHasFlag:  false,
+		},
+		{
+			name:         "firefox with incognito",
+			browserName:  "firefox",
+			incognito:    true,
+			wantFlag:     "--private-window",
+			wantHasFlag:  true,
+		},
+		{
+			name:         "edge with incognito",
+			browserName:  "edge",
+			incognito:    true,
+			wantFlag:     "--inprivate",
+			wantHasFlag:  true,
+		},
+		{
+			name:         "safari with incognito request",
+			browserName:  "safari",
+			incognito:    true,
+			wantFlag:     "",
+			wantHasFlag:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			br := &browser.Browser{
+				Name: tt.browserName,
+				Path: "/usr/bin/" + tt.browserName,
+			}
+
+			args := buildArgs(br, "https://google.com", "", tt.incognito)
+
+			// Check if incognito flag is present
+			found := false
+			for _, arg := range args {
+				if arg == tt.wantFlag {
+					found = true
+					break
+				}
+			}
+
+			if found != tt.wantHasFlag {
+				if tt.wantHasFlag {
+					t.Errorf("buildArgs() should include %q flag but didn't, args: %v", tt.wantFlag, args)
+				} else {
+					t.Errorf("buildArgs() should not include incognito flag but did, args: %v", args)
+				}
+			}
+		})
 	}
 }
 

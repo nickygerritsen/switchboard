@@ -35,7 +35,7 @@ func runOpen(cmd *cobra.Command, args []string) error {
 	logger.Info("Opening URL: %s", url)
 
 	rtr := createRouter(cfg)
-	browserName, profile, matched := rtr.FindMatch(url)
+	browserName, profile, incognito, matched := rtr.FindMatch(url)
 
 	if !matched {
 		logger.Info("No rule matched, using default browser: %s", browserName)
@@ -48,7 +48,7 @@ func runOpen(cmd *cobra.Command, args []string) error {
 	}
 
 	lnch := createLauncher(cfg)
-	if err := lnch.Launch(br, url, profile); err != nil {
+	if err := lnch.Launch(br, url, profile, incognito); err != nil {
 		return fmt.Errorf("failed to launch browser: %w", err)
 	}
 

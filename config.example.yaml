@@ -105,10 +105,11 @@ rules:
       - "*.reddit.com/*"
     browser: firefox
 
-  # Banking sites in Safari (macOS) with no profile
+  # Banking sites in Safari (macOS) with incognito mode
   - match:
       - "bank.com"
       - "bank.com/*"
       - "*.bank.com"
       - "*.bank.com/*"
     browser: safari
+    incognito: true  # Open in private browsing mode
