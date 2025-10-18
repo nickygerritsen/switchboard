@@ -39,37 +39,6 @@ irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps
 - Auto-register as browser: `curl -fsSL https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh -s -- --register`
 - Windows with options: `irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps1 | iex -ArgumentList "-Version v1.0.0 -Register"`
 
-### Download Pre-built Binaries
-
-Download the latest release for your platform from the [releases page](https://github.com/nickygerritsen/switchboard/releases).
-
-**macOS:**
-```bash
-# Download and extract (replace VERSION and ARCH with actual values)
-curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Darwin_ARCH.tar.gz | tar xz
-
-# Move to a directory in your PATH
-sudo mv switchboard /usr/local/bin/
-
-# Verify installation
-switchboard --version
-```
-
-**Linux:**
-```bash
-# Download and extract (replace VERSION and ARCH with actual values)
-curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Linux_ARCH.tar.gz | tar xz
-
-# Move to a directory in your PATH
-sudo mv switchboard /usr/local/bin/
-
-# Verify installation
-switchboard --version
-```
-
-**Windows:**
-Download the `.zip` file for your architecture from the releases page, extract it, and add the directory to your PATH.
-
 ### Building from Source
 
 ```bash
@@ -244,6 +213,39 @@ switchboard init
 # Generate shell completion scripts
 switchboard completion [bash|zsh|fish]
 ```
+
+## Alternative: Manual Installation
+
+If you prefer not to use the installation script, you can manually download and install pre-built binaries.
+
+Download the latest release for your platform from the [releases page](https://github.com/nickygerritsen/switchboard/releases).
+
+**macOS:**
+```bash
+# Download and extract (replace VERSION and ARCH with actual values)
+curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Darwin_ARCH.tar.gz | tar xz
+
+# Move to a directory in your PATH
+sudo mv switchboard /usr/local/bin/
+
+# Verify installation
+switchboard --version
+```
+
+**Linux:**
+```bash
+# Download and extract (replace VERSION and ARCH with actual values)
+curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Linux_ARCH.tar.gz | tar xz
+
+# Move to a directory in your PATH
+sudo mv switchboard /usr/local/bin/
+
+# Verify installation
+switchboard --version
+```
+
+**Windows:**
+Download the `.zip` file for your architecture from the releases page, extract it, and add the directory to your PATH.
 
 ## License
 
