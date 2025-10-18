@@ -35,3 +35,4 @@ jobs:
           tap: nickygerritsen/homebrew-tap
           tag: ${{ steps.get_release.outputs.result }}
           revision: ${{ github.event.workflow_run.head_sha }}
+          no_fork: true
