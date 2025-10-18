@@ -1,8 +1,10 @@
 name: Update Homebrew Formula
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -11,6 +13,7 @@ jobs:
   update-formula:
     name: Update Homebrew Formula
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Update Homebrew formula
         uses: dawidd6/action-homebrew-bump-formula@v3
