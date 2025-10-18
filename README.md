@@ -17,6 +17,28 @@ A smart URL router that opens links in different browsers based on configurable 
 
 ## Installation
 
+### Quick Install (Recommended)
+
+**macOS and Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh
+```
+
+Or with wget:
+```bash
+wget -qO- https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps1 | iex
+```
+
+**Options:**
+- Install specific version: `curl -fsSL https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh -s -- --version=v1.0.0`
+- Auto-register as browser: `curl -fsSL https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh -s -- --register`
+- Windows with options: `irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps1 | iex -ArgumentList "-Version v1.0.0 -Register"`
+
 ### Download Pre-built Binaries
 
 Download the latest release for your platform from the [releases page](https://github.com/nickygerritsen/switchboard/releases).
