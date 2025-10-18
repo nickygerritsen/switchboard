@@ -326,6 +326,43 @@ func TestBuildArgsWithIncognito(t *testing.T) {
 	}
 }
 
+func TestSafariIncognitoWarning(t *testing.T) {
+	// This test verifies that Safari with incognito mode:
+	// 1. Does not include any incognito flag (Safari doesn't support it)
+	// 2. Logs a warning to inform the user (verified by code inspection, not assertion)
+	// 3. Still includes the URL to be opened
+
+	br := &browser.Browser{
+		Name: "safari",
+		Path: "/Applications/Safari.app/Contents/MacOS/Safari",
+	}
+
+	url := "https://example.com"
+	args := buildArgs(br, url, "", true) // incognito=true
+
+	// Verify no incognito-like flags are present
+	for _, arg := range args {
+		if arg == "--incognito" || arg == "--private-window" || arg == "--inprivate" {
+			t.Errorf("buildArgs() should not include incognito flags for Safari, but found: %s", arg)
+		}
+	}
+
+	// Verify URL is still present
+	found := false
+	for _, arg := range args {
+		if arg == url {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("buildArgs() should include URL %s in args: %v", url, args)
+	}
+
+	// Note: A warning "Safari does not support private browsing via command-line, opening in normal mode"
+	// is logged when this code path is executed. This is verified by code inspection and manual testing.
+}
+
 // createFakeBrowser creates a platform-specific fake browser executable for testing
 func createFakeBrowser(t *testing.T, dir, name string) string {
 	t.Helper()

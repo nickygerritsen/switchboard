@@ -65,6 +65,8 @@ func buildArgs(br *browser.Browser, url, profile string, incognito bool) []strin
 		incognitoFlag := getIncognitoFlag(br.Name)
 		if incognitoFlag != "" {
 			args = append(args, incognitoFlag)
+		} else if br.Name == "safari" {
+			logger.Warn("Safari does not support private browsing via command-line, opening in normal mode")
 		}
 	}
 
