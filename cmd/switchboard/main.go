@@ -75,6 +75,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(registerCmd)
 	rootCmd.AddCommand(unregisterCmd)
+	rootCmd.AddCommand(completionCmd)
 }
 
 func main() {

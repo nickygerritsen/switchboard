@@ -38,6 +38,47 @@ After registration, set Switchboard as your default browser:
 - **Linux**: Settings → Default Applications → Web Browser
 - **Windows**: Settings → Apps → Default apps → Web browser
 
+## Shell Completion
+
+Switchboard supports shell completion for bash, zsh, and fish. To enable completions:
+
+### Bash
+
+```bash
+# For current session only
+source <(switchboard completion bash)
+
+# For all sessions (Linux)
+switchboard completion bash > /etc/bash_completion.d/switchboard
+
+# For all sessions (macOS)
+switchboard completion bash > /usr/local/etc/bash_completion.d/switchboard
+```
+
+### Zsh
+
+```bash
+# Enable completions if not already enabled
+echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+# For current session only
+source <(switchboard completion zsh)
+
+# For all sessions
+switchboard completion zsh > "${fpath[1]}/_switchboard"
+# Then start a new shell
+```
+
+### Fish
+
+```bash
+# For current session only
+switchboard completion fish | source
+
+# For all sessions
+switchboard completion fish > ~/.config/fish/completions/switchboard.fish
+```
+
 ## Configuration
 
 Switchboard looks for its configuration file at:
@@ -146,6 +187,9 @@ switchboard validate
 
 # Generate example configuration
 switchboard init
+
+# Generate shell completion scripts
+switchboard completion [bash|zsh|fish]
 ```
 
 ## License
