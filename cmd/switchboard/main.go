@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "dev"
+var version = "dev"
 
 var (
 	cfgFile string

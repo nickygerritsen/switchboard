@@ -44,14 +44,38 @@ The main branch is `main`.
 
 ## Commit Message Format
 
-All commits should include co-authorship with Claude:
+We use [Conventional Commits](https://www.conventionalcommits.org/) format for better changelog generation:
 
 ```
-Your commit message here
+<type>: <description>
+
+[optional body]
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### Commit Types
+
+- **feat**: New feature (appears in changelog under "New Features")
+- **fix**: Bug fix (appears in changelog under "Bug Fixes")
+- **docs**: Documentation changes (appears in changelog under "Documentation")
+- **refactor**: Code refactoring without behavior change (appears in changelog under "Enhancements")
+- **perf**: Performance improvements (appears in changelog under "Enhancements")
+- **test**: Adding or updating tests (excluded from changelog)
+- **chore**: Maintenance tasks (excluded from changelog)
+
+### Examples
+
+```
+feat: add shell completion support for bash, zsh, and fish
+
+fix: resolve Safari incognito warning not being logged
+
+docs: update README with installation instructions
+
+refactor: simplify router matching logic
 ```
 
 Keep commit messages concise and descriptive.
