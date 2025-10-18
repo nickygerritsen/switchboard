@@ -17,7 +17,38 @@ A smart URL router that opens links in different browsers based on configurable 
 
 ## Installation
 
-### Building from source
+### Download Pre-built Binaries
+
+Download the latest release for your platform from the [releases page](https://github.com/nickygerritsen/switchboard/releases).
+
+**macOS:**
+```bash
+# Download and extract (replace VERSION and ARCH with actual values)
+curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Darwin_ARCH.tar.gz | tar xz
+
+# Move to a directory in your PATH
+sudo mv switchboard /usr/local/bin/
+
+# Verify installation
+switchboard --version
+```
+
+**Linux:**
+```bash
+# Download and extract (replace VERSION and ARCH with actual values)
+curl -L https://github.com/nickygerritsen/switchboard/releases/download/vVERSION/switchboard_VERSION_Linux_ARCH.tar.gz | tar xz
+
+# Move to a directory in your PATH
+sudo mv switchboard /usr/local/bin/
+
+# Verify installation
+switchboard --version
+```
+
+**Windows:**
+Download the `.zip` file for your architecture from the releases page, extract it, and add the directory to your PATH.
+
+### Building from Source
 
 ```bash
 go build -o switchboard ./cmd/switchboard
