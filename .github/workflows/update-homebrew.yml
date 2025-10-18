@@ -15,9 +15,23 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - name: Get latest release
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            return release.tag_name;
+          result-encoding: string
+
       - name: Update Homebrew formula
         uses: dawidd6/action-homebrew-bump-formula@v3
         with:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           formula: switchboard
           tap: nickygerritsen/homebrew-tap
+          tag: ${{ steps.get_release.outputs.result }}
+          revision: ${{ github.event.workflow_run.head_sha }}
