@@ -39,6 +39,14 @@ irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps
 - Auto-register as browser: `curl -fsSL https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.sh | sh -s -- --register`
 - Windows with options: `irm https://raw.githubusercontent.com/nickygerritsen/switchboard/main/install.ps1 | iex -ArgumentList "-Version v1.0.0 -Register"`
 
+### Homebrew (macOS and Linux)
+
+```bash
+brew install nickygerritsen/tap/switchboard
+```
+
+After installation, run `switchboard register` to make it available as a browser in your system settings.
+
 ### Building from Source
 
 ```bash
