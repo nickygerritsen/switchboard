@@ -48,6 +48,8 @@ checksum:
 changelog:
   use: github
   sort: asc
+  abbrev: 0
+  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
   filters:
     exclude:
       - "^docs:"
