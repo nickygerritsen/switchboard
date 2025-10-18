@@ -4,10 +4,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/nickygerritsen/switchboard/internal/browser"
 	"github.com/nickygerritsen/switchboard/internal/config"
+	"github.com/nickygerritsen/switchboard/internal/logger"
 )
 
 func TestBuildArgs(t *testing.T) {
@@ -323,6 +325,69 @@ func TestBuildArgsWithIncognito(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestSafariIncognitoWarning(t *testing.T) {
+	// Setup logger with temp file to capture log output
+	tmpDir := t.TempDir()
+	logFile := filepath.Join(tmpDir, "test.log")
+
+	cfg := &config.Config{
+		DefaultBrowser: "chrome",
+		Debug:          false, // Warn level to capture WARN messages
+		LogFile:        logFile,
+	}
+
+	if err := logger.Init(cfg); err != nil {
+		t.Fatalf("Failed to init logger: %v", err)
+	}
+	defer func() { _ = logger.Close() }()
+
+	br := &browser.Browser{
+		Name: "safari",
+		Path: "/Applications/Safari.app/Contents/MacOS/Safari",
+	}
+
+	url := "https://example.com"
+	args := buildArgs(br, url, "", true) // incognito=true
+
+	// Close logger to flush to file
+	if err := logger.Close(); err != nil {
+		t.Fatalf("Failed to close logger: %v", err)
+	}
+
+	// Read log file
+	content, err := os.ReadFile(logFile)
+	if err != nil {
+		t.Fatalf("Failed to read log file: %v", err)
+	}
+
+	logContent := string(content)
+
+	// Verify the warning was logged
+	expectedWarning := "Safari does not support private browsing via command-line, opening in normal mode"
+	if !strings.Contains(logContent, expectedWarning) {
+		t.Errorf("Expected warning message not found in logs.\nExpected: %s\nLog content: %s", expectedWarning, logContent)
+	}
+
+	// Verify no incognito-like flags are present
+	for _, arg := range args {
+		if arg == "--incognito" || arg == "--private-window" || arg == "--inprivate" {
+			t.Errorf("buildArgs() should not include incognito flags for Safari, but found: %s", arg)
+		}
+	}
+
+	// Verify URL is still present
+	found := false
+	for _, arg := range args {
+		if arg == url {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("buildArgs() should include URL %s in args: %v", url, args)
 	}
 }
 
