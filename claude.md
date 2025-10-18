@@ -149,7 +149,7 @@ golangci-lint run
 go build ./...
 
 # Build the binary
-go build -o switchboard cmd/switchboard
+go build -o switchboard ./cmd/switchboard
 
 # Run the application
 ./switchboard open <url>
