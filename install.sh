@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # Print colored output
 print_info() {
-    printf "${GREEN}==>${NC} %s\n" "$1"
+    printf "${GREEN}==>${NC} %s\n" "$1" >&2
 }
 
 print_error() {
@@ -25,7 +25,7 @@ print_error() {
 }
 
 print_warning() {
-    printf "${YELLOW}Warning:${NC} %s\n" "$1"
+    printf "${YELLOW}Warning:${NC} %s\n" "$1" >&2
 }
 
 # Detect OS
