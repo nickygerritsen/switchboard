@@ -3,7 +3,6 @@ package registration
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 // Registrar handles browser registration for the current platform
@@ -22,16 +21,13 @@ type Registrar interface {
 }
 
 // getBinaryPath returns the absolute path to the current executable
+// Note: This does NOT resolve symlinks to ensure stability with package managers
+// like Homebrew that use symlinks to stable paths (e.g., /opt/homebrew/bin/switchboard)
+// rather than versioned paths (e.g., /opt/homebrew/Cellar/switchboard/1.0.1/bin/switchboard)
 func getBinaryPath() (string, error) {
 	exe, err := os.Executable()
 	if err != nil {
 		return "", fmt.Errorf("failed to get executable path: %w", err)
-	}
-
-	// Resolve symlinks
-	exe, err = filepath.EvalSymlinks(exe)
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve symlinks: %w", err)
 	}
 
 	return exe, nil
