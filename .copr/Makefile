@@ -1,8 +1,6 @@
-VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+VERSION ?= $(shell git describe --tags --always 2>/dev/null | sed 's/^v//' || echo "1.0.2")
 
 srpm:
-	dnf install -y git golang
-	git archive --format=tar.gz --prefix=switchboard-$(VERSION)/ HEAD > switchboard-$(VERSION).tar.gz
 	rpmbuild -bs --define "_sourcedir $(CURDIR)" \
 		--define "_specdir $(CURDIR)" \
 		--define "_builddir $(CURDIR)" \
