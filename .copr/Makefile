@@ -9,4 +9,5 @@ srpm:
 		--define "_srcrpmdir $(outdir)" \
 		--define "_rpmdir $(outdir)" \
 		--define "ver $(VERSION)" \
+		--define "version $(VERSION)" \
 		switchboard.spec
