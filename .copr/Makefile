@@ -8,5 +8,5 @@ srpm:
 		--define "_builddir $(CURDIR)" \
 		--define "_srcrpmdir $(outdir)" \
 		--define "_rpmdir $(outdir)" \
-		--define "version $(VERSION)" \
+		--define "ver $(VERSION)" \
 		switchboard.spec
