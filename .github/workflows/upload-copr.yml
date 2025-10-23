@@ -1,0 +1,72 @@
+name: Upload to Copr
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  upload-rpm:
+    name: Upload RPM to Copr
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Get latest release
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            core.setOutput('tag_name', release.tag_name);
+            core.setOutput('version', release.tag_name.replace(/^v/, ''));
+            return release;
+          result-encoding: string
+
+      - name: Download RPM artifacts
+        run: |
+          VERSION="${{ steps.get_release.outputs.version }}"
+
+          # Download x86_64 RPM
+          curl -L -o "switchboard-${VERSION}-1.x86_64.rpm" \
+            "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag_name }}/switchboard-${VERSION}-1.x86_64.rpm"
+
+          # Download aarch64 RPM
+          curl -L -o "switchboard-${VERSION}-1.aarch64.rpm" \
+            "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag_name }}/switchboard-${VERSION}-1.aarch64.rpm"
+
+          ls -lh *.rpm
+
+      - name: Install copr-cli
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install copr-cli
+
+      - name: Configure copr-cli
+        run: |
+          mkdir -p ~/.config
+          echo "${{ secrets.COPR_API_TOKEN }}" > ~/.config/copr
+          chmod 600 ~/.config/copr
+
+      - name: Upload to Copr
+        run: |
+          VERSION="${{ steps.get_release.outputs.version }}"
+
+          # Upload x86_64 RPM (will be available to all x86_64 chroots)
+          echo "Uploading x86_64 RPM..."
+          copr-cli add-package-rpms --name switchboard nickygerritsen/switchboard \
+            "switchboard-${VERSION}-1.x86_64.rpm"
+
+          # Upload aarch64 RPM (will be available to all aarch64 chroots)
+          echo "Uploading aarch64 RPM..."
+          copr-cli add-package-rpms --name switchboard nickygerritsen/switchboard \
+            "switchboard-${VERSION}-1.aarch64.rpm"
+
+          echo "Upload complete!"
