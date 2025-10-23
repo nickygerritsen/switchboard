@@ -72,6 +72,29 @@ changelog:
     - title: "Other Changes"
       order: 999
 
+nfpms:
+  - id: switchboard
+    package_name: switchboard
+    vendor: Nicky Gerritsen
+    homepage: https://github.com/nickygerritsen/switchboard
+    maintainer: Nicky Gerritsen <github@accounts.nickygerritsen.nl>
+    description: Smart URL router that opens links in different browsers
+    license: MIT
+    formats:
+      - rpm
+    bindir: /usr/bin
+    contents:
+      - src: config.example.yaml
+        dst: /usr/share/doc/switchboard/config.example.yaml
+        type: config|noreplace
+      - src: switchboard.desktop
+        dst: /usr/share/applications/switchboard.desktop
+      - src: LICENSE
+        dst: /usr/share/licenses/switchboard/LICENSE
+    rpm:
+      summary: Smart URL router that opens links in different browsers
+      group: Applications/Internet
+
 release:
   github:
     owner: nickygerritsen
