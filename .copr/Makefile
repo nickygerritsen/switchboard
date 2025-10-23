@@ -1,3 +1,5 @@
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+
 srpm:
 	dnf install -y git golang
 	git archive --format=tar.gz --prefix=switchboard-$(VERSION)/ HEAD > switchboard-$(VERSION).tar.gz
