@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Switchboard
+Comment=Smart URL router that opens links in different browsers
+Exec=switchboard open %u
+Terminal=false
+Categories=Network;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;
