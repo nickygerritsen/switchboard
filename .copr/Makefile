@@ -1,7 +1,10 @@
+# Ensure tags are fetched from the remote
+$(shell git fetch --tags 2>/dev/null || true)
+
 # Try multiple methods to extract version
 VERSION ?= $(shell git describe --tags --exact-match 2>/dev/null | sed 's/^v//')
 ifeq ($(VERSION),)
-VERSION := $(shell git describe --tags 2>/dev/null | sed 's/^v//' | cut -d'-' -f1)
+VERSION := $(shell git describe --tags 2>/dev/null | sed 's/^v//' | sed 's/-.*//')
 endif
 ifeq ($(VERSION),)
 VERSION := $(shell git tag --points-at HEAD 2>/dev/null | grep '^v' | sed 's/^v//' | head -1)
