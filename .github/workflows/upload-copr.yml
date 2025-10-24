@@ -1,0 +1,90 @@
+name: Build on Copr
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-build:
+    name: Trigger Copr Build
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Get latest release
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // TEMPORARY: Include prereleases for testing
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+            });
+            const release = releases[0];
+            core.setOutput('tag_name', release.tag_name);
+            core.setOutput('version', release.tag_name.replace(/^v/, ''));
+            return release;
+          result-encoding: string
+
+      - name: Install copr-cli
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install copr-cli
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_release.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Install RPM build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build SRPM locally
+        run: |
+          TAG="${{ steps.get_release.outputs.tag_name }}"
+          VERSION="${{ steps.get_release.outputs.version }}"
+
+          echo "Building SRPM for version $VERSION..."
+
+          # Create rpmbuild directories
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+          # Download the source tarball from GitHub
+          echo "Downloading source tarball..."
+          curl -L -o ~/rpmbuild/SOURCES/v${VERSION}.tar.gz \
+            "https://github.com/nickygerritsen/switchboard/archive/${TAG}.tar.gz"
+
+          # Run make srpm target (it will use git which is available here)
+          make -C .copr -f Makefile srpm outdir=$HOME/rpmbuild/SRPMS
+
+          # Find the generated SRPM
+          SRPM=$(ls ~/rpmbuild/SRPMS/switchboard-*.src.rpm)
+          echo "Generated SRPM: $SRPM"
+          echo "srpm_path=$SRPM" >> $GITHUB_OUTPUT
+        id: build_srpm
+
+      - name: Configure copr-cli
+        run: |
+          mkdir -p ~/.config
+          echo "${{ secrets.COPR_API_TOKEN }}" > ~/.config/copr
+          chmod 600 ~/.config/copr
+
+      - name: Upload and build SRPM
+        run: |
+          VERSION="${{ steps.get_release.outputs.version }}"
+          SRPM="${{ steps.build_srpm.outputs.srpm_path }}"
+
+          echo "Uploading SRPM and triggering build for version $VERSION..."
+          copr-cli build nickygerritsen/switchboard "$SRPM"
+
+          echo "Build triggered! Monitor at: https://copr.fedorainfracloud.org/coprs/nickygerritsen/switchboard/builds/"

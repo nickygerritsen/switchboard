@@ -47,6 +47,24 @@ brew install nickygerritsen/tap/switchboard
 
 After installation, run `switchboard register` to make it available as a browser in your system settings.
 
+### Fedora/RHEL/CentOS (DNF/YUM)
+
+```bash
+# Enable the Copr repository
+sudo dnf copr enable nickygerritsen/switchboard
+
+# Install switchboard
+sudo dnf install switchboard
+```
+
+For RHEL/CentOS systems using yum:
+```bash
+sudo yum copr enable nickygerritsen/switchboard
+sudo yum install switchboard
+```
+
+After installation, run `switchboard register` to make it available as a browser in your system settings.
+
 ### Building from Source
 
 ```bash
