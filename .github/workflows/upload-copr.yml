@@ -51,12 +51,18 @@ jobs:
 
       - name: Build SRPM locally
         run: |
+          TAG="${{ steps.get_release.outputs.tag_name }}"
           VERSION="${{ steps.get_release.outputs.version }}"
 
           echo "Building SRPM for version $VERSION..."
 
           # Create rpmbuild directories
           mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+          # Download the source tarball from GitHub
+          echo "Downloading source tarball..."
+          curl -L -o ~/rpmbuild/SOURCES/v${VERSION}.tar.gz \
+            "https://github.com/nickygerritsen/switchboard/archive/${TAG}.tar.gz"
 
           # Run make srpm target (it will use git which is available here)
           make -C .copr -f Makefile srpm outdir=$HOME/rpmbuild/SRPMS

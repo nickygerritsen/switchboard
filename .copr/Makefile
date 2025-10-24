@@ -26,7 +26,7 @@ srpm:
 	echo "" && \
 	echo "=== Using VERSION: $$VERSION ===" && \
 	sed "s/__VERSION__/$$VERSION/g" ../switchboard.spec > $(outdir)/switchboard.spec && \
-	rpmbuild -bs --define "_sourcedir $(CURDIR)/.." \
+	rpmbuild -bs --define "_sourcedir $$HOME/rpmbuild/SOURCES" \
 		--define "_specdir $(outdir)" \
 		--define "_builddir $(CURDIR)" \
 		--define "_srcrpmdir $(outdir)" \
