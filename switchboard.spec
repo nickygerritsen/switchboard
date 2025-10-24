@@ -1,3 +1,5 @@
+%global debug_package %{nil}
+
 Name:           switchboard
 Version:        __VERSION__
 Release:        1%{?dist}
