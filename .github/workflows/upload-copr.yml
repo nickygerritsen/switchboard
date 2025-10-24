@@ -1,4 +1,4 @@
-name: Upload to Copr
+name: Build on Copr
 
 on:
   workflow_run:
@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  upload-rpm:
-    name: Upload RPM to Copr
+  trigger-build:
+    name: Trigger Copr Build
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -29,20 +29,6 @@ jobs:
             return release;
           result-encoding: string
 
-      - name: Download RPM artifacts
-        run: |
-          VERSION="${{ steps.get_release.outputs.version }}"
-
-          # Download x86_64 RPM
-          curl -L -o "switchboard-${VERSION}-1.x86_64.rpm" \
-            "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag_name }}/switchboard-${VERSION}-1.x86_64.rpm"
-
-          # Download aarch64 RPM
-          curl -L -o "switchboard-${VERSION}-1.aarch64.rpm" \
-            "https://github.com/${{ github.repository }}/releases/download/${{ steps.get_release.outputs.tag_name }}/switchboard-${VERSION}-1.aarch64.rpm"
-
-          ls -lh *.rpm
-
       - name: Install copr-cli
         run: |
           sudo apt-get update
@@ -55,18 +41,33 @@ jobs:
           echo "${{ secrets.COPR_API_TOKEN }}" > ~/.config/copr
           chmod 600 ~/.config/copr
 
-      - name: Upload to Copr
+      - name: Configure SCM package
         run: |
+          TAG="${{ steps.get_release.outputs.tag_name }}"
           VERSION="${{ steps.get_release.outputs.version }}"
 
-          # Upload x86_64 RPM (will be available to all x86_64 chroots)
-          echo "Uploading x86_64 RPM..."
-          copr-cli add-package-rpms --name switchboard nickygerritsen/switchboard \
-            "switchboard-${VERSION}-1.x86_64.rpm"
+          # Try to edit existing package, if it doesn't exist it will fail and we'll add it
+          copr-cli edit-package-scm nickygerritsen/switchboard \
+            --name switchboard \
+            --clone-url https://github.com/nickygerritsen/switchboard.git \
+            --commit "$TAG" \
+            --spec switchboard.spec \
+            --type git \
+            --method make_srpm || \
+          copr-cli add-package-scm nickygerritsen/switchboard \
+            --name switchboard \
+            --clone-url https://github.com/nickygerritsen/switchboard.git \
+            --commit "$TAG" \
+            --spec switchboard.spec \
+            --type git \
+            --method make_srpm
 
-          # Upload aarch64 RPM (will be available to all aarch64 chroots)
-          echo "Uploading aarch64 RPM..."
-          copr-cli add-package-rpms --name switchboard nickygerritsen/switchboard \
-            "switchboard-${VERSION}-1.aarch64.rpm"
+      - name: Trigger Copr build
+        run: |
+          TAG="${{ steps.get_release.outputs.tag_name }}"
+          VERSION="${{ steps.get_release.outputs.version }}"
 
-          echo "Upload complete!"
+          echo "Triggering build for version $VERSION (tag $TAG)..."
+          copr-cli build-package nickygerritsen/switchboard --name switchboard
+
+          echo "Build triggered! Monitor at: https://copr.fedorainfracloud.org/coprs/nickygerritsen/switchboard/builds/"
