@@ -71,6 +71,6 @@ jobs:
           VERSION="${{ steps.get_release.outputs.version }}"
 
           echo "Triggering build for version $VERSION (tag $TAG)..."
-          copr-cli build-package nickygerritsen/switchboard --name switchboard
+          copr-cli build-package nickygerritsen/switchboard --name switchboard --env "VERSION=$VERSION"
 
           echo "Build triggered! Monitor at: https://copr.fedorainfracloud.org/coprs/nickygerritsen/switchboard/builds/"
