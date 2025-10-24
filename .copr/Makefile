@@ -1,5 +1,4 @@
 VERSION ?= $(shell git describe --tags --always 2>/dev/null | sed 's/^v//')
-VERSION := $(if $(VERSION),$(VERSION),1.0.2)
 
 srpm:
 	@echo "Building SRPM for version: $(VERSION)"
