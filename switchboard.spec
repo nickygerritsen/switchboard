@@ -1,15 +1,11 @@
-%if 0%{?ver:1}
-%global version %{ver}
-%endif
-
 Name:           switchboard
-Version:        %{?version}%{!?version:1.0.2}
+Version:        __VERSION__
 Release:        1%{?dist}
 Summary:        Smart URL router that opens links in different browsers
 
 License:        MIT
 URL:            https://github.com/nickygerritsen/switchboard
-Source0:        https://github.com/nickygerritsen/switchboard/archive/v%{version}.tar.gz
+Source0:        https://github.com/nickygerritsen/switchboard/archive/v__VERSION__.tar.gz
 
 BuildRequires:  golang >= 1.24
 BuildRequires:  git
@@ -19,12 +15,12 @@ Switchboard routes URLs to different browsers based on configurable
 patterns, with support for browser profiles and cross-platform usage.
 
 %prep
-%autosetup -n %{name}-%{version}
+%autosetup -n %{name}-__VERSION__
 
 %build
 export CGO_ENABLED=0
 export GOFLAGS="-mod=readonly -trimpath"
-go build -o switchboard -ldflags="-s -w -X main.version=%{version}" ./cmd/switchboard
+go build -o switchboard -ldflags="-s -w -X main.version=__VERSION__" ./cmd/switchboard
 
 %install
 # Install binary
@@ -46,5 +42,5 @@ install -Dm644 LICENSE %{buildroot}%{_datadir}/licenses/switchboard/LICENSE
 %{_datadir}/licenses/switchboard/LICENSE
 
 %changelog
-* %(date "+%a %b %d %Y") Nicky Gerritsen <github@accounts.nickygerritsen.nl> - %{version}-1
-- Release %{version}
+* %(date "+%a %b %d %Y") Nicky Gerritsen <github@accounts.nickygerritsen.nl> - __VERSION__-1
+- Release __VERSION__
