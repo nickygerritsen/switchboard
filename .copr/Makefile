@@ -1,4 +1,14 @@
-VERSION ?= $(shell git describe --tags --always 2>/dev/null | sed 's/^v//')
+# Try multiple methods to extract version
+VERSION ?= $(shell git describe --tags --exact-match 2>/dev/null | sed 's/^v//')
+ifeq ($(VERSION),)
+VERSION := $(shell git describe --tags 2>/dev/null | sed 's/^v//' | cut -d'-' -f1)
+endif
+ifeq ($(VERSION),)
+VERSION := $(shell git tag --points-at HEAD 2>/dev/null | grep '^v' | sed 's/^v//' | head -1)
+endif
+ifeq ($(VERSION),)
+$(error VERSION could not be determined from git tags)
+endif
 
 srpm:
 	@echo "Building SRPM for version: $(VERSION)"
