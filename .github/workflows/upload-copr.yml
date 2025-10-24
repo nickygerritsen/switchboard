@@ -44,6 +44,22 @@ jobs:
           echo "${{ secrets.COPR_API_TOKEN }}" > ~/.config/copr
           chmod 600 ~/.config/copr
 
+      - name: Add git to buildroot
+        run: |
+          # Get all enabled chroots for the project
+          echo "Getting enabled chroots for nickygerritsen/switchboard..."
+          CHROOTS=$(copr-cli get nickygerritsen/switchboard | grep -E '^\s+[a-z].*:' | awk '{print $1}' | tr -d ':')
+
+          echo "Found chroots:"
+          echo "$CHROOTS"
+          echo ""
+
+          # Add git to all chroots so it's available during SRPM creation
+          for chroot in $CHROOTS; do
+            echo "Adding git to $chroot..."
+            copr-cli edit-chroot nickygerritsen/switchboard/$chroot --packages "git"
+          done
+
       - name: Configure SCM package
         run: |
           TAG="${{ steps.get_release.outputs.tag_name }}"
@@ -71,6 +87,6 @@ jobs:
           VERSION="${{ steps.get_release.outputs.version }}"
 
           echo "Triggering build for version $VERSION (tag $TAG)..."
-          copr-cli build-package nickygerritsen/switchboard --name switchboard --env "VERSION=$VERSION"
+          copr-cli build-package nickygerritsen/switchboard --name switchboard
 
           echo "Build triggered! Monitor at: https://copr.fedorainfracloud.org/coprs/nickygerritsen/switchboard/builds/"
