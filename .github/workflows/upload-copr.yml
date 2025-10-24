@@ -38,55 +38,47 @@ jobs:
           sudo apt-get install -y python3-pip
           pip3 install copr-cli
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_release.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Install RPM build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build SRPM locally
+        run: |
+          VERSION="${{ steps.get_release.outputs.version }}"
+
+          echo "Building SRPM for version $VERSION..."
+
+          # Create rpmbuild directories
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+          # Run make srpm target (it will use git which is available here)
+          make -C .copr -f Makefile srpm outdir=$HOME/rpmbuild/SRPMS
+
+          # Find the generated SRPM
+          SRPM=$(ls ~/rpmbuild/SRPMS/switchboard-*.src.rpm)
+          echo "Generated SRPM: $SRPM"
+          echo "srpm_path=$SRPM" >> $GITHUB_OUTPUT
+        id: build_srpm
+
       - name: Configure copr-cli
         run: |
           mkdir -p ~/.config
           echo "${{ secrets.COPR_API_TOKEN }}" > ~/.config/copr
           chmod 600 ~/.config/copr
 
-      - name: Add git to buildroot
+      - name: Upload and build SRPM
         run: |
-          # Get all enabled chroots for the project
-          echo "Getting enabled chroots for nickygerritsen/switchboard..."
-          CHROOTS=$(copr-cli get nickygerritsen/switchboard | grep -E '^\s+[a-z].*:' | awk '{print $1}' | tr -d ':')
-
-          echo "Found chroots:"
-          echo "$CHROOTS"
-          echo ""
-
-          # Add git to all chroots so it's available during SRPM creation
-          for chroot in $CHROOTS; do
-            echo "Adding git to $chroot..."
-            copr-cli edit-chroot nickygerritsen/switchboard/$chroot --packages "git"
-          done
-
-      - name: Configure SCM package
-        run: |
-          TAG="${{ steps.get_release.outputs.tag_name }}"
           VERSION="${{ steps.get_release.outputs.version }}"
+          SRPM="${{ steps.build_srpm.outputs.srpm_path }}"
 
-          # Try to edit existing package, if it doesn't exist it will fail and we'll add it
-          copr-cli edit-package-scm nickygerritsen/switchboard \
-            --name switchboard \
-            --clone-url https://github.com/nickygerritsen/switchboard.git \
-            --commit "$TAG" \
-            --spec switchboard.spec \
-            --type git \
-            --method make_srpm || \
-          copr-cli add-package-scm nickygerritsen/switchboard \
-            --name switchboard \
-            --clone-url https://github.com/nickygerritsen/switchboard.git \
-            --commit "$TAG" \
-            --spec switchboard.spec \
-            --type git \
-            --method make_srpm
-
-      - name: Trigger Copr build
-        run: |
-          TAG="${{ steps.get_release.outputs.tag_name }}"
-          VERSION="${{ steps.get_release.outputs.version }}"
-
-          echo "Triggering build for version $VERSION (tag $TAG)..."
-          copr-cli build-package nickygerritsen/switchboard --name switchboard
+          echo "Uploading SRPM and triggering build for version $VERSION..."
+          copr-cli build nickygerritsen/switchboard "$SRPM"
 
           echo "Build triggered! Monitor at: https://copr.fedorainfracloud.org/coprs/nickygerritsen/switchboard/builds/"
