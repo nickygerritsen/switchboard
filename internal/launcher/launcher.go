@@ -3,7 +3,6 @@ package launcher
 import (
 	"fmt"
 	"os/exec"
-	"runtime"
 
 	"github.com/nickygerritsen/switchboard/internal/browser"
 	"github.com/nickygerritsen/switchboard/internal/config"
@@ -82,9 +81,6 @@ func buildArgs(br *browser.Browser, url, profile string, incognito bool) []strin
 		}
 	}
 
-	// Add platform-specific flags
-	args = append(args, getPlatformArgs(br.Name)...)
-
 	// Add the URL as the last argument
 	args = append(args, url)
 
@@ -101,48 +97,6 @@ func supportsProfiles(browserName string) bool {
 	}
 }
 
-// getPlatformArgs returns platform-specific arguments for the browser
-func getPlatformArgs(browserName string) []string {
-	var args []string
-
-	switch runtime.GOOS {
-	case "darwin":
-		// macOS-specific flags
-		// For most browsers on macOS, we want to open a new window/tab
-		// Safari is typically launched via 'open -a Safari' but we're using the direct binary path
-		switch browserName {
-		case "chrome", "brave", "edge", "vivaldi", "chromium":
-			// No special flags needed - Chrome-based browsers handle this well
-		case "firefox":
-			// Firefox on macOS
-			args = append(args, "--new-window")
-		}
-
-	case "linux":
-		// Linux-specific flags
-		switch browserName {
-		case "chrome", "brave", "edge", "vivaldi", "chromium":
-			// Chromium-based browsers
-			args = append(args, "--new-window")
-		case "firefox":
-			// Firefox on Linux
-			args = append(args, "--new-window")
-		}
-
-	case "windows":
-		// Windows-specific flags
-		switch browserName {
-		case "chrome", "brave", "edge", "vivaldi", "chromium":
-			// Chromium-based browsers
-			args = append(args, "--new-window")
-		case "firefox":
-			// Firefox on Windows
-			args = append(args, "-new-window")
-		}
-	}
-
-	return args
-}
 
 // getIncognitoFlag returns the incognito/private mode flag for a browser
 func getIncognitoFlag(browserName string) string {

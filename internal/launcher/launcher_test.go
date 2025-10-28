@@ -157,6 +157,7 @@ func TestNewLauncher(t *testing.T) {
 	launcher := NewLauncher(cfg)
 	if launcher == nil {
 		t.Fatal("NewLauncher() returned nil")
+		return
 	}
 	if launcher.config != cfg {
 		t.Error("NewLauncher() did not store config")
