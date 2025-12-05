@@ -97,7 +97,6 @@ func supportsProfiles(browserName string) bool {
 	}
 }
 
-
 // getIncognitoFlag returns the incognito/private mode flag for a browser
 func getIncognitoFlag(browserName string) string {
 	switch browserName {

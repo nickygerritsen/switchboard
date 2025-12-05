@@ -257,46 +257,46 @@ func TestGetIncognitoFlag(t *testing.T) {
 
 func TestBuildArgsWithIncognito(t *testing.T) {
 	tests := []struct {
-		name         string
-		browserName  string
-		incognito    bool
-		wantFlag     string
-		wantHasFlag  bool
+		name        string
+		browserName string
+		incognito   bool
+		wantFlag    string
+		wantHasFlag bool
 	}{
 		{
-			name:         "chrome with incognito",
-			browserName:  "chrome",
-			incognito:    true,
-			wantFlag:     "--incognito",
-			wantHasFlag:  true,
+			name:        "chrome with incognito",
+			browserName: "chrome",
+			incognito:   true,
+			wantFlag:    "--incognito",
+			wantHasFlag: true,
 		},
 		{
-			name:         "chrome without incognito",
-			browserName:  "chrome",
-			incognito:    false,
-			wantFlag:     "--incognito",
-			wantHasFlag:  false,
+			name:        "chrome without incognito",
+			browserName: "chrome",
+			incognito:   false,
+			wantFlag:    "--incognito",
+			wantHasFlag: false,
 		},
 		{
-			name:         "firefox with incognito",
-			browserName:  "firefox",
-			incognito:    true,
-			wantFlag:     "--private-window",
-			wantHasFlag:  true,
+			name:        "firefox with incognito",
+			browserName: "firefox",
+			incognito:   true,
+			wantFlag:    "--private-window",
+			wantHasFlag: true,
 		},
 		{
-			name:         "edge with incognito",
-			browserName:  "edge",
-			incognito:    true,
-			wantFlag:     "--inprivate",
-			wantHasFlag:  true,
+			name:        "edge with incognito",
+			browserName: "edge",
+			incognito:   true,
+			wantFlag:    "--inprivate",
+			wantHasFlag: true,
 		},
 		{
-			name:         "safari with incognito request",
-			browserName:  "safari",
-			incognito:    true,
-			wantFlag:     "",
-			wantHasFlag:  false,
+			name:        "safari with incognito request",
+			browserName: "safari",
+			incognito:   true,
+			wantFlag:    "",
+			wantHasFlag: false,
 		},
 	}
 
