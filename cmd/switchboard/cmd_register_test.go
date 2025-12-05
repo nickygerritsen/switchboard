@@ -11,9 +11,9 @@ import (
 
 // mockRegistrar is a mock implementation of browserRegistrar for testing
 type mockRegistrar struct {
-	registerFunc    func() error
-	unregisterFunc  func() error
-	isRegisteredFunc func() (bool, error)
+	registerFunc      func() error
+	unregisterFunc    func() error
+	isRegisteredFunc  func() (bool, error)
 	getBinaryPathFunc func() (string, error)
 }
 

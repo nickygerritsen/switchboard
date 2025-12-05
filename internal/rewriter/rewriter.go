@@ -15,8 +15,9 @@ import (
 //   - {fragment} - Fragment/hash (e.g., "section")
 //
 // Example:
-//   Rewrite("https://twitter.com/user/status/123", "xcancel.com{path}")
-//   Returns: "https://xcancel.com/user/status/123"
+//
+//	Rewrite("https://twitter.com/user/status/123", "xcancel.com{path}")
+//	Returns: "https://xcancel.com/user/status/123"
 func Rewrite(originalURL, template string) (string, error) {
 	if template == "" {
 		return originalURL, nil

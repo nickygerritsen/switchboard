@@ -84,9 +84,9 @@ func (r *darwinRegistrar) getAppBundlePath() string {
 func (r *darwinRegistrar) createAndRegisterAppBundle() error {
 	// Check if Swift compiler is available
 	if _, err := exec.LookPath("swiftc"); err != nil {
-		return fmt.Errorf("swift compiler (swiftc) not found, please install Xcode Command Line Tools:\n\n"+
-			"    xcode-select --install\n\n"+
-			"or install the full Xcode from the App Store\n"+
+		return fmt.Errorf("swift compiler (swiftc) not found, please install Xcode Command Line Tools:\n\n" +
+			"    xcode-select --install\n\n" +
+			"or install the full Xcode from the App Store\n" +
 			"(the Swift compiler is required to build the macOS app bundle for URL handling)")
 	}
 

@@ -115,7 +115,7 @@ Exec=%s open %%u
 Terminal=false
 Categories=Network;WebBrowser;
 MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;
-StartupNotify=false
+StartupNotify=true
 `, r.binaryPath)
 }
 
