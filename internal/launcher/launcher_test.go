@@ -123,6 +123,69 @@ func TestBuildArgs(t *testing.T) {
 	}
 }
 
+func TestFirefoxProfileArgs(t *testing.T) {
+	tests := []struct {
+		name     string
+		profiles []browser.Profile
+		profile  string
+		want     []string
+	}{
+		{
+			name: "match ini profile by name uses -P with IniName",
+			profiles: []browser.Profile{
+				{Name: "default-release", IniName: "default-release", Path: "/home/u/.mozilla/firefox/abc.default-release"},
+			},
+			profile: "default-release",
+			want:    []string{"-P", "default-release"},
+		},
+		{
+			name: "match new-style profile by display name uses --profile path",
+			profiles: []browser.Profile{
+				{Name: "Werk", IniName: "", Path: "/home/u/.mozilla/firefox/gL7HpkJO.Profile 1"},
+			},
+			profile: "Werk",
+			want:    []string{"--profile", "/home/u/.mozilla/firefox/gL7HpkJO.Profile 1"},
+		},
+		{
+			name: "match new-style display name takes precedence over old ini name",
+			profiles: []browser.Profile{
+				{Name: "Privé", IniName: "default-release", Path: "/home/u/.mozilla/firefox/abc.default-release"},
+			},
+			profile: "Privé",
+			want:    []string{"-P", "default-release"},
+		},
+		{
+			name: "match by IniName when display name was changed",
+			profiles: []browser.Profile{
+				{Name: "Privé", IniName: "default-release", Path: "/home/u/.mozilla/firefox/abc.default-release"},
+			},
+			profile: "default-release",
+			want:    []string{"-P", "default-release"},
+		},
+		{
+			name:     "no profiles falls back to -P with raw name",
+			profiles: nil,
+			profile:  "default-release",
+			want:     []string{"-P", "default-release"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			br := &browser.Browser{Name: "firefox", Path: "/usr/bin/firefox", Profiles: tt.profiles}
+			got := firefoxProfileArgs(br, tt.profile)
+			if len(got) != len(tt.want) {
+				t.Fatalf("got %v, want %v", got, tt.want)
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("arg %d: got %q, want %q", i, got[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
 func TestSupportsProfiles(t *testing.T) {
 	tests := []struct {
 		name        string
