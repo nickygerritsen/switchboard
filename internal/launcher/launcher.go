@@ -76,8 +76,7 @@ func buildArgs(br *browser.Browser, url, profile string, incognito bool) []strin
 			// Chromium-based browsers use --profile-directory
 			args = append(args, "--profile-directory="+profile)
 		case "firefox":
-			// Firefox uses -P flag
-			args = append(args, "-P", profile)
+			args = append(args, firefoxProfileArgs(br, profile)...)
 		}
 	}
 
@@ -85,6 +84,46 @@ func buildArgs(br *browser.Browser, url, profile string, incognito bool) []strin
 	args = append(args, url)
 
 	return args
+}
+
+// firefoxProfileArgs returns the command-line arguments for selecting a
+// Firefox profile by user-configured name. Old-style profiles (present in
+// profiles.ini) are launched with `-P <IniName>`; new-style profiles
+// (tracked only in the Profile Groups SQLite store) are launched with
+// `--profile <Path>`, since `-P` cannot resolve them.
+func firefoxProfileArgs(br *browser.Browser, profile string) []string {
+	// Look for a matching detected profile, preferring an exact match on
+	// the display Name (which may come from the SQLite store) and falling
+	// back to the profiles.ini Name.
+	var match *browser.Profile
+	for i := range br.Profiles {
+		if br.Profiles[i].Name == profile {
+			match = &br.Profiles[i]
+			break
+		}
+	}
+	if match == nil {
+		for i := range br.Profiles {
+			if br.Profiles[i].IniName == profile {
+				match = &br.Profiles[i]
+				break
+			}
+		}
+	}
+
+	if match != nil {
+		if match.IniName != "" {
+			return []string{"-P", match.IniName}
+		}
+		if match.Path != "" {
+			return []string{"--profile", match.Path}
+		}
+	}
+
+	// No detected profile matched — keep the previous behaviour so users
+	// without profile detection (or referring to a profile by its raw ini
+	// name) continue to work.
+	return []string{"-P", profile}
 }
 
 // supportsProfiles returns true if the browser supports profiles

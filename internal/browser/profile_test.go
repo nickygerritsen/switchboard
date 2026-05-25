@@ -1,9 +1,12 @@
 package browser
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
+
+	_ "modernc.org/sqlite"
 )
 
 func TestDetectProfiles_Chromium(t *testing.T) {
@@ -247,6 +250,123 @@ func TestDetectProfiles_UnsupportedBrowser(t *testing.T) {
 	profiles = DetectProfiles("unknown")
 	if profiles != nil {
 		t.Errorf("Expected nil profiles for unknown browser, got %d profiles", len(profiles))
+	}
+}
+
+func TestDetectFirefoxProfiles_WithProfileGroups(t *testing.T) {
+	// Simulate a Firefox profile directory with a profiles.ini that
+	// references a StoreID, plus a matching Profile Groups SQLite store
+	// that names the existing profile and adds another one not in the ini.
+	tempDir := t.TempDir()
+
+	profilesIni := `[Profile0]
+Name=default-release
+IsRelative=1
+Path=abc123.default-release
+StoreID=deadbeef
+ShowSelector=1
+
+[General]
+StartWithLastProfile=1
+Version=2
+`
+	if err := os.WriteFile(filepath.Join(tempDir, "profiles.ini"), []byte(profilesIni), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	groupDir := filepath.Join(tempDir, "Profile Groups")
+	if err := os.MkdirAll(groupDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	dbPath := filepath.Join(groupDir, "deadbeef.sqlite")
+	createFirefoxGroupDB(t, dbPath, []firefoxGroupProfile{
+		{Directory: "abc123.default-release", Name: "Privé"},
+		{Directory: "xyz999.Profile 1", Name: "Werk"},
+	})
+
+	originalGetProfileDir := getProfileDirFunc
+	defer func() { getProfileDirFunc = originalGetProfileDir }()
+	getProfileDirFunc = func(string) string { return tempDir }
+
+	profiles := detectFirefoxProfiles()
+	if len(profiles) != 2 {
+		t.Fatalf("expected 2 profiles, got %d: %#v", len(profiles), profiles)
+	}
+
+	// Existing ini profile keeps its IniName but takes the SQLite display name.
+	if profiles[0].Name != "Privé" {
+		t.Errorf("expected display name 'Privé', got %q", profiles[0].Name)
+	}
+	if profiles[0].IniName != "default-release" {
+		t.Errorf("expected IniName 'default-release', got %q", profiles[0].IniName)
+	}
+	if profiles[0].Path != filepath.Join(tempDir, "abc123.default-release") {
+		t.Errorf("unexpected Path: %s", profiles[0].Path)
+	}
+
+	// New-style profile (only in SQLite) has no IniName.
+	if profiles[1].Name != "Werk" {
+		t.Errorf("expected display name 'Werk', got %q", profiles[1].Name)
+	}
+	if profiles[1].IniName != "" {
+		t.Errorf("expected empty IniName for new-style profile, got %q", profiles[1].IniName)
+	}
+	if profiles[1].Path != filepath.Join(tempDir, "xyz999.Profile 1") {
+		t.Errorf("unexpected Path: %s", profiles[1].Path)
+	}
+}
+
+func TestMergeFirefoxProfiles_NoStoreID(t *testing.T) {
+	// Without a StoreID, the SQLite reader must not be consulted at all.
+	called := false
+	readGroup := func(profileDir, storeID string) []firefoxGroupProfile {
+		called = true
+		return nil
+	}
+	profiles := mergeFirefoxProfiles(
+		"/firefox",
+		[]firefoxIniProfile{
+			{Name: "default", Directory: "abc.default"},
+		},
+		readGroup,
+	)
+	if called {
+		t.Error("readGroup should not be invoked when no profile has a StoreID")
+	}
+	if len(profiles) != 1 || profiles[0].IniName != "default" || profiles[0].Name != "default" {
+		t.Errorf("unexpected merge result: %#v", profiles)
+	}
+}
+
+// createFirefoxGroupDB writes a minimal Profile Groups SQLite store
+// containing the given profile rows, mirroring the schema Firefox uses.
+func createFirefoxGroupDB(t *testing.T, path string, rows []firefoxGroupProfile) {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatalf("open sqlite: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	if _, err := db.Exec(`CREATE TABLE Profiles (
+		id INTEGER NOT NULL PRIMARY KEY,
+		path TEXT NOT NULL UNIQUE,
+		name TEXT NOT NULL,
+		avatar TEXT NOT NULL,
+		themeId TEXT NOT NULL,
+		themeFg TEXT NOT NULL,
+		themeBg TEXT NOT NULL
+	)`); err != nil {
+		t.Fatalf("create table: %v", err)
+	}
+
+	for i, r := range rows {
+		if _, err := db.Exec(
+			`INSERT INTO Profiles(id, path, name, avatar, themeId, themeFg, themeBg) VALUES (?, ?, ?, '', '', '', '')`,
+			i+1, r.Directory, r.Name,
+		); err != nil {
+			t.Fatalf("insert row %d: %v", i, err)
+		}
 	}
 }
 
